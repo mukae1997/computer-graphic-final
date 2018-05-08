@@ -38,22 +38,22 @@ function addObjs() {
 /////////////////////////////////////////////////////
 function addPath(){
     var l = 1;
-    var brickgeo = new THREE.PlaneGeometry(l * 3, l);
+    var brickgeo = new THREE.PlaneGeometry(l * 5, l);
     var brickmat = new THREE.MeshPhongMaterial( { 
         color: 0x222222, 
         specular: 0x222222,
          side:THREE.DoubleSide  
     } );
     var brick = new THREE.Mesh(brickgeo, brickmat);
-    brick.position.y = 1.05;
+    brick.position.y = 1.05;     
+    brick.rotation.x = Math.PI/2;
     
     var pathr_basic = islandR * 0.55;
     var brickcnt = 100;
     for (var i = 0; i < brickcnt; i++) {
         var newbrick = brick.clone();
         var pathr = pathr_basic * (1 + 0.2 * Math.cos(i*1.0/brickcnt * TWO_PI * 5)  );
-        var ang = i*1.0/brickcnt * TWO_PI;        
-        newbrick.rotation.x = Math.PI/2;
+        var ang = i*1.0/brickcnt * TWO_PI;   
         newbrick.rotateOnWorldAxis(new THREE.Vector3(0,1,0), ang);
 
         newbrick.position.x = pathr * Math.cos(ang);
@@ -117,10 +117,11 @@ function addSky() {
 
 function addSpringObjs(){
     var sp = new THREE.Spring(); 
-    sp.addObjs(); 
+    sp.addObjs();
     var springGroup = sp.group; 
-    springGroup.position.set(-islandR/2,0,-islandR/2);
+    springGroup.position.set(-islandR/2,1.05,-islandR/2);
     scene.add(springGroup);
+    controls.target = (springGroup.position);
 }
 function addSummerObjs() {
     
@@ -191,7 +192,9 @@ function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({
+			alpha: true
+		});
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     

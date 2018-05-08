@@ -6,8 +6,14 @@ THREE.Spring = function(){
 
 THREE.Spring.prototype.addObjs = function(){
     this.addObjTree();
-//    this.addGrass();
+    this.addGrass(-10, -10);
+    this.addGrass(-14, -8);
+    this.addGrass(-25, 30);
+    this.addGrass(20, -10);
     
+    this.addBasin();
+    
+    this.addStones();
 }
 
 THREE.Spring.prototype.addObjTree = function() {
@@ -25,9 +31,10 @@ THREE.Spring.prototype.addObjTree = function() {
         objLoader.setPath( treept );
         objLoader.load( 'plants1.obj', function ( object ) {
 
-            object.position.y = 0;
+            object.position.y = -1;
             object.position.x = 0;
             object.position.z = 0;
+            object.rotation.y = 1;
             object.scale.setScalar(0.03);
             self.group.add( object );
 //            var obj2 =  object.clone();
@@ -41,10 +48,90 @@ THREE.Spring.prototype.addObjTree = function() {
     });
 }
 
-THREE.Spring.prototype.addGrass = () => {
-    var h = 3;
+THREE.Spring.prototype.addGrass = function(posx, posz) {
+    var h = 2;
     var l = 8;
     var grasspln = new THREE.PlaneGeometry(l,h);
-//    var grassmat = new THREE.
-    grass.rotation.x = Math.PI / 2;
+    var grassmat = new THREE.MeshPhongMaterial( { 
+//        color: 0xffffff, 
+        specular: 0xffffff,
+        map: THREE.ImageUtils.loadTexture('imgs/thingrass.png')
+        , transparent: true 
+        , side:THREE.DoubleSide
+//        ,
+//        blending:THREE.MultiplyBlending
+//        format: THREE.RGBAFormat
+//        
+    });
+    var grass = new THREE.Mesh(grasspln, grassmat);
+    grass.position.y = h;
+    grass.rotateOnWorldAxis(new THREE.Vector3(0,1,0),-Math.PI / 2);
+    
+    var grassgrp = new THREE.Group();
+    
+    for (var i = 0 ; i < 35; i++) {
+        var agrass = grass.clone();
+        var ang = i * 0.3;
+        agrass.rotateOnWorldAxis(new THREE.Vector3(0,1,0),
+                             -Math.PI / 2 - ang);
+        agrass.scale.y = 2 + THREE.Math.randFloatSpread(2);
+        agrass.position.set(Math.random() * posx, agrass.scale.y  * grass.position.y / 2, Math.random()* posz);
+        grassgrp.add(agrass);
+    }
+    
+    this.group.add(grassgrp);
+    
+}
+
+
+THREE.Spring.prototype.addBasin = function() {
+    var r1 = 5, r2 = 3, th = 2, h = 3;
+     var inner = new THREE.CylinderGeometry( r1, r2, h, 8 );
+     var outer = new THREE.CylinderGeometry( r1 + th, r2 + th, h, 8 );
+    var inn = new ThreeBSP( inner );
+    var out = new ThreeBSP( outer );
+    var basingeo = out.subtract(inn).toGeometry();
+    
+    var basinmat = new THREE.MeshPhongMaterial( { 
+        color: 0xcccccc, 
+        specular: 0xcccccc 
+    });
+    
+    var basin = new THREE.Mesh(basingeo, basinmat); 
+    basin.position.y = h/2;
+     
+    
+    this.group.add(basin);
+    
+}
+
+THREE.Spring.prototype.addStones = function() {
+    
+    var stonesp = new THREE.Shape();
+    var cnt = 5;
+    var r;
+    for (var i = 0 ; i < cnt; i++) {
+       r = 0.1 + Math.random();
+        var ang = i * Math.PI * 2 / cnt;
+        stonesp.lineTo(r *   Math.cos(ang), 
+                       r *   Math.sin(ang));
+    }
+        var ang = Math.PI * 2;
+        stonesp.lineTo(r *   Math.cos(ang), 
+                       r *  Math.sin(ang));
+//    flrshape.lineTo(r, 0);w
+     
+    var extrudeSettings = { amount: 1, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+
+
+    var stonegeo = new THREE.ExtrudeGeometry( stonesp, extrudeSettings );
+    
+    var stonemat = new THREE.MeshLambertMaterial( { 
+        color: 0xdddddd 
+    });
+    var stone = new THREE.Mesh(stonegeo, stonemat);
+    stone.position.y = 1;
+    stone.position.x = 15;
+    stone.rotation.x = Math.PI/2;
+    this.group.add(stone);
 }
