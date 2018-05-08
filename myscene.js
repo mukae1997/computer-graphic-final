@@ -1,5 +1,9 @@
 var scene, camera, renderer, controls, clock;
-var islandR = 80;
+var islandR = 60;
+var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff, 
+                              specular: 0xdddddd } );
+var TWO_PI = Math.PI * 2;
+///////////////////////////////////
  
 init();
 addControls();
@@ -23,7 +27,7 @@ function addObjs() {
    addIsland();
    addSea();
    addSky();
-    
+   addPath();
     
    addSpringObjs();
    addSummerObjs(); 
@@ -32,7 +36,34 @@ function addObjs() {
 
 }
 /////////////////////////////////////////////////////
+function addPath(){
+    var l = 1;
+    var brickgeo = new THREE.PlaneGeometry(l * 3, l);
+    var brickmat = new THREE.MeshPhongMaterial( { 
+        color: 0x222222, 
+        specular: 0x222222,
+         side:THREE.DoubleSide  
+    } );
+    var brick = new THREE.Mesh(brickgeo, brickmat);
+    brick.position.y = 1.05;
+    
+    var pathr_basic = islandR * 0.55;
+    var brickcnt = 100;
+    for (var i = 0; i < brickcnt; i++) {
+        var newbrick = brick.clone();
+        var pathr = pathr_basic * (1 + 0.2 * Math.cos(i*1.0/brickcnt * TWO_PI * 5)  );
+        var ang = i*1.0/brickcnt * TWO_PI;        
+        newbrick.rotation.x = Math.PI/2;
+        newbrick.rotateOnWorldAxis(new THREE.Vector3(0,1,0), ang);
 
+        newbrick.position.x = pathr * Math.cos(ang);
+        newbrick.position.z = pathr * Math.sin(ang);    
+        scene.add(newbrick);
+
+    }
+    
+//    scene.add(brick);
+}
 function addSea() {
     
     var seaGeo = new THREE.PlaneBufferGeometry( 1700, 1700 );
@@ -41,6 +72,8 @@ function addSea() {
 
     var sea = new THREE.Mesh( seaGeo, seaMat );
     sea.rotation.x = -Math.PI/2;
+    
+    
     scene.add(sea);
 
 }
@@ -83,33 +116,11 @@ function addSky() {
 /////////////////   season setting   ///////////////////
 
 function addSpringObjs(){
-    var mtlLoader = new THREE.MTLLoader();
-    var treept = 'obj/5n2xpdhz35vk-flower/';
-    mtlLoader.setPath( treept );
-    mtlLoader.load( 'plants1.mtl', function( materials ) {
-
-        materials.preload();
-
-        var objLoader = new THREE.OBJLoader();
-        objLoader.setMaterials( materials );
-        objLoader.setPath( treept );
-        objLoader.load( 'plants1.obj', function ( object ) {
-
-            object.position.y = 2;
-            object.position.x = -10;
-            object.position.z = -10;
-            object.scale.setScalar(0.03);
-            scene.add( object );
-            var obj2 =  object.clone();
-            obj2.scale.setScalar(0.03)
-            obj2.position.x = -13;
-            obj2.rotation.y = Math.PI;
-            scene.add( obj2 );
-
-        }, ()=>{}  , ()=>{}  );
-
-    });
-    
+    var sp = new THREE.Spring(); 
+    sp.addObjs(); 
+    var springGroup = sp.group; 
+    springGroup.position.set(-islandR/2,0,-islandR/2);
+    scene.add(springGroup);
 }
 function addSummerObjs() {
     
@@ -128,7 +139,7 @@ function addWinterObjs(){
 }
 
 /////////////////////////////////////////////////////
-
+THREE.addFlower = addFlower;
 function addFlower(c, p) { 
     
     var flrshape = new THREE.Shape();
@@ -184,7 +195,7 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
-    camera.position.y = 15; 
+    camera.position.y = 25; 
     camera.position.z = 25;
     
     scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
@@ -197,9 +208,11 @@ function init() {
 }
 function addControls() {
     
-    controls = new THREE.FirstPersonControls( camera   );
-				controls.movementSpeed = 10;
-				controls.lookSpeed = 0.3;
+//    controls = new THREE.FirstPersonControls( camera   );
+//				controls.movementSpeed = 10;
+//				controls.lookSpeed = 0.3;
+    
+     controls = new THREE.OrbitControls( camera ); 
 }
 function setTestHelper()
  {
@@ -207,7 +220,7 @@ function setTestHelper()
     var grid = new THREE.GridHelper(islandR*2, islandR*2, 0xffffff, 0x555555 );
      grid.position.y = 1;
     scene.add( grid );
-   addFlower(0xff8ee2, new THREE.Vector3(-islandR/2,3,-islandR/2));
+//   addFlower(0xff8ee2, new THREE.Vector3(-islandR/2,3,-islandR/2));
    addFlower(0x118400, new THREE.Vector3(islandR/2,3,-islandR/2));
    addFlower(0xe8e8e8, new THREE.Vector3(-islandR/2,3,islandR/2));
    addFlower(0xc14d00, new THREE.Vector3(islandR/2,3,islandR/2));
