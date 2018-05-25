@@ -3,6 +3,10 @@ var islandR = 60;
 var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff, 
                               specular: 0xdddddd } );
 var TWO_PI = Math.PI * 2;
+var islandThick = 4;
+
+var seaGeo;
+var sp;
 ///////////////////////////////////
  
 init();
@@ -12,12 +16,17 @@ addObjs();
 animate();
 
 //////////////////////////////////////////
+function update(){
+    updateSeaGeo();
+    sp.update();
+}
 
  function animate() {
     requestAnimationFrame( animate );
 
     
     var delta = clock.getDelta();
+    update();
     controls.update(delta);
     renderer.render(scene, camera);
 }; 
@@ -45,7 +54,7 @@ function addPath(){
          side:THREE.DoubleSide  
     } );
     var brick = new THREE.Mesh(brickgeo, brickmat);
-    brick.position.y = 1.05;     
+    brick.position.y = islandThick+0.1;     
     brick.rotation.x = Math.PI/2;
     
     var pathr_basic = islandR * 0.55;
@@ -54,7 +63,7 @@ function addPath(){
         var newbrick = brick.clone();
         var pathr = pathr_basic * (1 + 0.2 * Math.cos(i*1.0/brickcnt * TWO_PI * 5)  );
         var ang = i*1.0/brickcnt * TWO_PI;   
-        newbrick.rotateOnWorldAxis(new THREE.Vector3(0,1,0), ang);
+        newbrick.rotateOnWorldAxis(new THREE.Vector3(0,1,0), TWO_PI - ang);
 
         newbrick.position.x = pathr * Math.cos(ang);
         newbrick.position.z = pathr * Math.sin(ang);    
@@ -64,12 +73,46 @@ function addPath(){
     
 //    scene.add(brick);
 }
+
+function updateSeaGeo(){
+    var seapos = seaGeo.vertices;
+    var dt = new Date();
+    
+    for (var j = 0; j < 50; j++){
+        for (var i = 0; i < 50; i++) {
+            seapos[j*50+i].z = 3.4 * THREE.Math.mapLinear(Math.sin(j + dt.getTime() * 0.003) + Math.cos(j%50*2 + dt.getTime() * 0.002) + Math.cos(seapos[i].x + dt.getTime() * 0.002), -2, 3, -2, 1);
+    //        seapos[i].y = Math.sin(dt.getTime());
+        }
+    }
+    
+    seaGeo.verticesNeedUpdate = true;
+}
+
 function addSea() {
     
-    var seaGeo = new THREE.PlaneBufferGeometry( 1700, 1700 );
-    var seaMat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x050505 } );
+    seaGeo = new THREE.PlaneGeometry( 700, 700, 50, 50);
+    console.log(seaGeo);
+    
+    updateSeaGeo();
+    
+    var seaMat = new THREE.MeshPhongMaterial( { 
+        color: 0xffffff, 
+        specular: 0x050505,
+        map: THREE.ImageUtils.loadTexture('imgs/sea.jpg')
+        , transparent: true  
+    } );
     seaMat.color.setHSL( +201/360, 0.72, 0.45 );
-
+//var grassmat = new THREE.MeshPhongMaterial( { 
+////        color: 0xffffff, 
+//        specular: 0xffffff,
+//        map: THREE.ImageUtils.loadTexture('imgs/thingrass.png')
+//        , transparent: true 
+//        , side:THREE.DoubleSide
+////        , 
+////        blending:THREE.MultiplyBlending
+////        format: THREE.RGBAFormat
+////        
+//    });
     var sea = new THREE.Mesh( seaGeo, seaMat );
     sea.rotation.x = -Math.PI/2;
     
@@ -90,7 +133,7 @@ function addIsland() {
     }
     islandShape.lineTo(r, 0);
     
-    var extrudeSettings = { amount: 1, bevelEnabled: true, bevelSegments: 4, steps: 2, bevelSize: 1, bevelThickness: 1 };
+    var extrudeSettings = { amount: 1, bevelEnabled: true, bevelSegments: 4, steps: 2, bevelSize: 1, bevelThickness: islandThick };
 
     var islandgeo = new THREE.ExtrudeGeometry( islandShape, extrudeSettings );
 
@@ -102,7 +145,7 @@ function addIsland() {
 }
 
 function addSky() {
-    var skyGeo = new THREE.SphereGeometry( 500, 32, 15 );
+    var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
     var skyMat = new THREE.MeshLambertMaterial( { 
         color:0xaae1ff, 
         side: THREE.BackSide,
@@ -116,12 +159,12 @@ function addSky() {
 /////////////////   season setting   ///////////////////
 
 function addSpringObjs(){
-    var sp = new THREE.Spring(); 
+    sp = new THREE.Spring(); 
     sp.addObjs();
     var springGroup = sp.group; 
-    springGroup.position.set(-islandR/2,1.05,-islandR/2);
+    springGroup.position.set(-islandR/2,islandThick + .05,-islandR/2);
     scene.add(springGroup);
-    controls.target = (springGroup.position);
+    controls.target = springGroup.position.clone();
 }
 function addSummerObjs() {
     
@@ -221,11 +264,11 @@ function setTestHelper()
  {
      
     var grid = new THREE.GridHelper(islandR*2, islandR*2, 0xffffff, 0x555555 );
-     grid.position.y = 1;
+     grid.position.y = islandThick;
     scene.add( grid );
 //   addFlower(0xff8ee2, new THREE.Vector3(-islandR/2,3,-islandR/2));
-   addFlower(0x118400, new THREE.Vector3(islandR/2,3,-islandR/2));
-   addFlower(0xe8e8e8, new THREE.Vector3(-islandR/2,3,islandR/2));
-   addFlower(0xc14d00, new THREE.Vector3(islandR/2,3,islandR/2));
+   addFlower(0x118400, new THREE.Vector3(islandR/2,islandThick,-islandR/2));
+   addFlower(0xe8e8e8, new THREE.Vector3(-islandR/2,islandThick,islandR/2));
+   addFlower(0xc14d00, new THREE.Vector3(islandR/2,islandThick,islandR/2));
     
  }

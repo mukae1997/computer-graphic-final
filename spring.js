@@ -2,10 +2,23 @@ THREE.Spring = function(){
     
     this.type = "spring";
     this.group = new THREE.Group();
+    this.petals = undefined;
 }
 
+THREE.Spring.prototype.update = function(){
+    this.updatePetals();
+}
+
+THREE.Spring.prototype.updatePetals = function(){
+    var maxh = 20;
+    var dt = new Date();
+    const loop = 5000;
+    var state = dt.getTime() % loop / loop;
+    this.petals.position.y = maxh * (1 - state); 
+    
+}
 THREE.Spring.prototype.addObjs = function(){
-    this.addObjTree();
+//    this.addObjTree();
     this.addGrass(-10, -10);
     this.addGrass(-14, -8);
     this.addGrass(-25, 30);
@@ -14,7 +27,35 @@ THREE.Spring.prototype.addObjs = function(){
     this.addBasin();
     
     this.addStones();
+    this.addPetals();
 }
+THREE.Spring.prototype.addPetals = function () {
+    var geometry = new THREE.BufferGeometry();
+    var vertices = [];
+    var textureLoader = new THREE.TextureLoader();
+    var petalsprite = textureLoader.load( 'imgs/petal.png' );
+    
+    
+    for ( i = 0; i < 10; i ++ ) {
+        var x = Math.random() * 3;
+        var y = Math.random() * 3;
+        var z = Math.random() * 10 + 10;
+        vertices.push( x, y, z );
+    }
+    geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+    
+    var mat = new THREE.PointsMaterial( { 
+        size: 3,
+        map: petalsprite, 
+        blending: THREE.AdditiveBlending, 
+        depthTest: true, 
+        transparent : true,
+        side:THREE.DoubleSide
+    } );
+    this.petals = new THREE.Points(geometry, mat);
+    this.group.add(this.petals);
+}
+
 
 THREE.Spring.prototype.addObjTree = function() {
     
@@ -58,7 +99,7 @@ THREE.Spring.prototype.addGrass = function(posx, posz) {
         map: THREE.ImageUtils.loadTexture('imgs/thingrass.png')
         , transparent: true 
         , side:THREE.DoubleSide
-//        ,
+//        , 
 //        blending:THREE.MultiplyBlending
 //        format: THREE.RGBAFormat
 //        
