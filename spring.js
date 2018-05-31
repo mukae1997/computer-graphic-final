@@ -18,16 +18,27 @@ THREE.Spring.prototype.updatePetals = function(){
     
 }
 THREE.Spring.prototype.addObjs = function(){
-//    this.addObjTree();
+    this.addObjTree();
     this.addGrass(-10, -10);
     this.addGrass(-14, -8);
     this.addGrass(-25, 30);
+    this.addGrass(0, 0);
     this.addGrass(20, -10);
     
     this.addBasin();
     
     this.addStones();
     this.addPetals();
+    
+    var pl =  new THREE.PointLight(0xf8ffc9, 2.3, 30);
+    pl.position.set(6, 15, 5);
+    var hlper = new THREE.PointLightHelper(pl);
+    
+    this.group.add(pl);
+    
+    pl.position.set(6, 8, 5);
+    this.group.add(pl);
+    scene.add(hlper);
 }
 THREE.Spring.prototype.addPetals = function () {
     var geometry = new THREE.BufferGeometry();
@@ -45,12 +56,13 @@ THREE.Spring.prototype.addPetals = function () {
     geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
     
     var mat = new THREE.PointsMaterial( { 
-        size: 3,
+        size: 2,
         map: petalsprite, 
-        blending: THREE.AdditiveBlending, 
+//        blending: THREE.AdditiveBlending, 
         depthTest: true, 
         transparent : true,
-        side:THREE.DoubleSide
+        side:THREE.DoubleSide,
+        alphaTest: 0.5
     } );
     this.petals = new THREE.Points(geometry, mat);
     this.group.add(this.petals);
@@ -90,15 +102,16 @@ THREE.Spring.prototype.addObjTree = function() {
 }
 
 THREE.Spring.prototype.addGrass = function(posx, posz) {
-    var h = 2;
-    var l = 8;
+    var h = 1.5;
+    var l = 6;
     var grasspln = new THREE.PlaneGeometry(l,h);
     var grassmat = new THREE.MeshPhongMaterial( { 
 //        color: 0xffffff, 
-        specular: 0xffffff,
+        specular: 0xbbbbbb,
         map: THREE.ImageUtils.loadTexture('imgs/thingrass.png')
         , transparent: true 
         , side:THREE.DoubleSide
+        ,alphaTest: 0.5
 //        , 
 //        blending:THREE.MultiplyBlending
 //        format: THREE.RGBAFormat
@@ -133,9 +146,9 @@ THREE.Spring.prototype.addBasin = function() {
     var out = new ThreeBSP( outer );
     var basingeo = out.subtract(inn).toGeometry();
     
-    var basinmat = new THREE.MeshPhongMaterial( { 
-        color: 0xcccccc, 
-        specular: 0xcccccc 
+    var basinmat = new THREE.MeshBasicMaterial( { 
+        color: 0x663333
+        
     });
     
     var basin = new THREE.Mesh(basingeo, basinmat); 

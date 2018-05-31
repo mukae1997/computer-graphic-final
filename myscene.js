@@ -182,6 +182,8 @@ function addWinterObjs(){
     winter = new THREE.Winter(-islandR/2,islandThick + .05,islandR/2);
     scene.add(winter.group);
     winter.particle.update(() => {renderer.render(scene, camera);});
+    
+    
 }
 
 /////////////////////////////////////////////////////
