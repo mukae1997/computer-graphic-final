@@ -13,6 +13,7 @@ init();
 addControls();
 setTestHelper();
 addObjs();
+
 animate();
 
 //////////////////////////////////////////
@@ -245,9 +246,6 @@ function init() {
     camera.position.z = 25;
     
     scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
-    var pl =  new THREE.PointLight(0xf8ffc9, 1, 500);
-    pl.position.set(0,200, 0);
-    scene.add(pl);
     
 	clock = new THREE.Clock();
 
