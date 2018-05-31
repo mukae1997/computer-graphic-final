@@ -50,10 +50,17 @@ function addObjs() {
 function addPath(){
     var l = 1;
     var brickgeo = new THREE.PlaneGeometry(l * 5, l);
+    
+    var brickmap = new THREE.ImageUtils.loadTexture( 'imgs/rock.jpg' );
+    brickmap.wrapS = THREE.RepeatWrapping;
+    brickmap.wrapT = THREE.RepeatWrapping; 
+    brickmap.repeat.set(1,.21);
+    
     var brickmat = new THREE.MeshPhongMaterial( { 
-        color: 0x222222, 
+        color: 0x888888, 
         specular: 0x222222,
-         side:THREE.DoubleSide  
+         side:THREE.DoubleSide,
+        map:brickmap
     } );
     var brick = new THREE.Mesh(brickgeo, brickmat);
     brick.position.y = islandThick+0.1;     
@@ -64,7 +71,7 @@ function addPath(){
     for (var i = 0; i < brickcnt; i++) {
         var newbrick = brick.clone();
         var pathr = pathr_basic * (1 + 0.2 * Math.cos(i*1.0/brickcnt * TWO_PI * 5)  );
-        var ang = i*1.0/brickcnt * TWO_PI;   
+        var ang = i*1.0/brickcnt * TWO_PI + Math.PI/4;   
         newbrick.rotateOnWorldAxis(new THREE.Vector3(0,1,0), TWO_PI - ang);
 
         newbrick.position.x = pathr * Math.cos(ang);
@@ -162,10 +169,14 @@ function addSky() {
 
 function addSpringObjs(){
     sp = new THREE.Spring(); 
-    sp.addObjs();
     var springGroup = sp.group; 
     springGroup.position.set(-islandR/2,islandThick + .05,-islandR/2);
+    sp.addObjs(scene);
+
     scene.add(springGroup);
+    
+    
+    
     controls.target = springGroup.position.clone();
 }
 function addSummerObjs() {
@@ -246,7 +257,7 @@ function init() {
     document.body.appendChild( renderer.domElement );
     
     camera.position.y = 25; 
-    camera.position.z = 25;
+    camera.position.z = 5;
     
     scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
     

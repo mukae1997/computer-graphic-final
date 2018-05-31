@@ -3,73 +3,93 @@ THREE.Spring = function(){
     this.type = "spring";
     this.group = new THREE.Group();
     this.petals = undefined;
+    this.petalsgeo = undefined;
+    this.basin = undefined;
+    this.staticpetals = undefined;
+    
+    this.scene = null;
+    
+    this.treeobj = null;
+    this.flowerobj = null;
+    
+    this.trees = [];
+    
 }
 
 THREE.Spring.prototype.update = function(){
     this.updatePetals();
 }
 
-THREE.Spring.prototype.updatePetals = function(){
-    var maxh = 20;
-    var dt = new Date();
-    const loop = 5000;
-    var state = dt.getTime() % loop / loop;
-    this.petals.position.y = maxh * (1 - state); 
+THREE.Spring.prototype.addObjs = function(scene){
+    this.scene = scene;
+    this.loadFlowerobj(() => {
+        this.addFlower(20,20, 0.2);
+        this.addFlower(25,22, 0.15, Math.PI*1.5);
+        this.addFlower(20,23, 0.17, Math.PI/8);
+        
+    });
+    this.loadTreeobj(()=>{
+        this.addObjTree(0,0,1,0.05);
+        this.addObjTree(0,30, -Math.PI/2);
+        this.addObjTree(-20,30, Math.PI/2,0.02);
+        this.addObjTree(-15,15, Math.PI/2);
+        this.addObjTree(13,19, -Math.PI/4);
+        this.addObjTree(25, -13, Math.PI/9); 
+         
+    });
     
-}
-THREE.Spring.prototype.addObjs = function(){
-    this.addObjTree();
-    this.addGrass(-10, -10);
+    this.addGrass(-7, -7);
     this.addGrass(-14, -8);
-    this.addGrass(-25, 30);
-    this.addGrass(0, 0);
+    this.addGrass(-17, 30,2.5,4);
     this.addGrass(20, -10);
     
     this.addBasin();
+    this.addGrass(0, 0, 3, 6);
+    this.addGrass(-12, 16, 3, 3);
+    this.addGrass(0, 30, 1.3, 4);
+    // flowers
+    this.addGrass(23, 23, 1.2, 5); 
     
-    this.addStones();
+    
+    this.addStones(0,0,5,100);
+    this.addStones(-6,30,2,8);
+//    this.addStones(-5,27,2,8);
+    this.addStones(25,-5,2,8);
+    this.addStones(18,19,0,8);
+    
+    this.addStones(22,22,0,18);
+    
+    
     this.addPetals();
     
-    var pl =  new THREE.PointLight(0xf8ffc9, 2.3, 30);
-    pl.position.set(6, 15, 5);
-    var hlper = new THREE.PointLightHelper(pl);
-    
-    this.group.add(pl);
-    
-    pl.position.set(6, 8, 5);
-    this.group.add(pl);
-    scene.add(hlper);
 }
-THREE.Spring.prototype.addPetals = function () {
-    var geometry = new THREE.BufferGeometry();
-    var vertices = [];
-    var textureLoader = new THREE.TextureLoader();
-    var petalsprite = textureLoader.load( 'imgs/petal.png' );
-    
-    
-    for ( i = 0; i < 10; i ++ ) {
-        var x = Math.random() * 3;
-        var y = Math.random() * 3;
-        var z = Math.random() * 10 + 10;
-        vertices.push( x, y, z );
+
+/////////////////////////////////////////////////
+
+THREE.Spring.prototype.updatePetals = function(){
+    var maxh = 26;
+    var dt = new Date();
+    const loop = 5000;
+    var state = dt.getTime() % loop / loop;
+//    this.petals.position.y = maxh * (1 - state); 
+    var poses = this.petalsgeo.getAttribute("position").array;
+    for (var i = 0; i < poses.length; i+=3){
+         poses[i+1] -= Math.random()*0.2;
+        if (Math.random() > 0.7) {
+         poses[i+1] -= Math.random()*0.5;
+            
+        } 
+        poses[i+1] = poses[i+1] < 0 ? maxh : poses[i+1];
     }
-    geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+//    this.petalsgeo.verticesNeedUpdate = true;
+    this.petalsgeo.attributes.position.needsUpdate = true;
     
-    var mat = new THREE.PointsMaterial( { 
-        size: 2,
-        map: petalsprite, 
-//        blending: THREE.AdditiveBlending, 
-        depthTest: true, 
-        transparent : true,
-        side:THREE.DoubleSide,
-        alphaTest: 0.5
-    } );
-    this.petals = new THREE.Points(geometry, mat);
-    this.group.add(this.petals);
 }
 
+/////////////////////////////////////////////////
 
-THREE.Spring.prototype.addObjTree = function() {
+
+THREE.Spring.prototype.loadTreeobj = function(callback) {
     
     var mtlLoader = new THREE.MTLLoader();
     var treept = 'obj/5n2xpdhz35vk-flower/';   
@@ -83,26 +103,148 @@ THREE.Spring.prototype.addObjTree = function() {
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
         objLoader.load( 'plants1.obj', function ( object ) {
+            
+            self.treeobj = object;
+            callback();
 
-            object.position.y = -1;
-            object.position.x = 0;
-            object.position.z = 0;
-            object.rotation.y = 1;
-            object.scale.setScalar(0.03);
-            self.group.add( object );
-//            var obj2 =  object.clone();
-//            obj2.scale.setScalar(0.03)
-//            obj2.position.x = -13;
-//            obj2.rotation.y = Math.PI;
-//            scene.add( obj2 );
  
         }, ()=>{}  , ()=>{}  );
 
     });
 }
 
-THREE.Spring.prototype.addGrass = function(posx, posz) {
-    var h = 1.5;
+
+THREE.Spring.prototype.loadFlowerobj = function(callback) {
+    
+    var mtlLoader = new THREE.MTLLoader();
+    var treept = 'obj/flower-obj/';   
+    var self = this;
+    mtlLoader.setPath( treept );
+    mtlLoader.load( 'flower.mtl', function( materials ) {
+
+        materials.preload();
+
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials( materials );
+        objLoader.setPath( treept );
+        objLoader.load( 'flower.obj', function ( object ) {
+            object.position.set(20,0,20);
+            object.scale.setScalar(0.2);
+            
+            console.log(object)
+            self.flowerobj = object;
+//            self.group.add(object);
+            callback();
+
+ 
+        }, ()=>{}  , ()=>{}  );
+
+    });
+}
+/////////////////////////////////////////////////
+
+
+THREE.Spring.prototype.addPetals = function () {
+    var geometry = new THREE.BufferGeometry();
+    var vertices = [];
+    var textureLoader = new THREE.TextureLoader();
+    var petalsprite = textureLoader.load( 'imgs/petal.png' ); 
+    for ( i = 0; i < 40; i ++ ) {
+        var x = THREE.Math.randFloatSpread(14) + 4;
+        var y = Math.random() * 10 + 5;
+        var z = THREE.Math.randFloatSpread(14) + 4;
+        vertices.push( x, y, z );
+    }
+    geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+    
+    var mat = new THREE.PointsMaterial( { 
+//        lights:true, 
+        size: 1.5,
+        map: petalsprite, 
+//        blending: THREE.AdditiveBlending, 
+        depthTest: true, 
+        transparent : true,
+        side:THREE.DoubleSide,
+        alphaTest: 0.5,
+        color:0xd23c28
+    } );
+    this.petals = new THREE.Points(geometry, mat);
+    this.petalsgeo = geometry;
+    
+    
+    this.group.add(this.petals);
+    
+    // add static petals
+    var staticgeo = new THREE.BufferGeometry();
+    var vtx2 = [];
+    for ( i = 0; i < 30; i ++ ) {
+        var x = THREE.Math.randFloatSpread(18);
+        var y = this.basin.position.y+this.basin.thick/2 + 0.1;
+        var z = THREE.Math.randFloatSpread(18);
+        vtx2.push( x, y, z );
+    }
+    
+    // on the ground
+    for ( i = 0; i < 250; i ++ ) {
+        var theta = Math.random() * Math.PI * 2;
+        var r = THREE.Math.randFloat(6,26);
+        var x = r * Math.cos(theta) ;
+        var y = 0.4 - Math.random();
+        var z = r * Math.sin(theta);
+        vtx2.push( x, y, z );
+    }
+    staticgeo.addAttribute( 'position', new THREE.Float32BufferAttribute( vtx2, 3 ) );
+    this.staticpetals = new THREE.Points(staticgeo, mat);
+    this.group.add(this.staticpetals);
+}
+
+
+THREE.Spring.prototype.addFlower = function(x=0,z=0,scale=-1,rot=0) {
+    
+    
+    if(!this.flowerobj) return ;
+    var object = this.flowerobj.clone();
+    if (scale != -1) {
+        object.scale.setScalar(scale);
+    } else {
+        object.scale.setScalar(0.25);
+        
+    }
+    object.position.set(x, -1.5, z);
+//            object.scale.y = Math.random(1)*0.03;
+    object.rotation.y = rot;
+    this.group.add( object );
+    
+}
+THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1) {
+    if(!this.treeobj) return ;
+    var object = this.treeobj.clone();
+    var self = this;
+    object.position.y = -1;
+    object.position.x = x;
+    object.position.z = z;
+    object.rotation.y = roty;
+    
+    if (scaley != -1) {
+        object.scale.setScalar(scaley);
+    } else {
+        scaley = 0.03;
+        object.scale.setScalar(scaley * THREE.Math.randFloat(0.5,0.9));
+    }
+    self.group.add( object ); 
+//    this.trees.push(object);
+    
+    var pl =  new THREE.PointLight(0xf8ffc9, 1.48, 30);
+    this.scene.add(pl); 
+    var h  =  THREE.Math.mapLinear(scaley,0.01 ,0.05,10,20) ;
+    pl.position.set(object.position.x, h ,object.position.z);
+    pl.position.add(this.group.position);
+    var hlper = new THREE.PointLightHelper(pl);
+    this.scene.add(hlper);
+}
+
+THREE.Spring.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
+    var h = _h;
     var l = 6;
     var grasspln = new THREE.PlaneGeometry(l,h);
     var grassmat = new THREE.MeshPhongMaterial( { 
@@ -111,7 +253,7 @@ THREE.Spring.prototype.addGrass = function(posx, posz) {
         map: THREE.ImageUtils.loadTexture('imgs/thingrass.png')
         , transparent: true 
         , side:THREE.DoubleSide
-        ,alphaTest: 0.5
+        , alphaTest: 0.5
 //        , 
 //        blending:THREE.MultiplyBlending
 //        format: THREE.RGBAFormat
@@ -129,7 +271,7 @@ THREE.Spring.prototype.addGrass = function(posx, posz) {
         agrass.rotateOnWorldAxis(new THREE.Vector3(0,1,0),
                              -Math.PI / 2 - ang);
         agrass.scale.y = 2 + THREE.Math.randFloatSpread(2);
-        agrass.position.set(Math.random() * posx, agrass.scale.y  * grass.position.y / 2, Math.random()* posz);
+        agrass.position.set(THREE.Math.randFloatSpread(2)*r+posx, agrass.scale.y  * grass.position.y / 2, THREE.Math.randFloatSpread(2)*r+ posz);
         grassgrp.add(agrass);
     }
     
@@ -139,28 +281,73 @@ THREE.Spring.prototype.addGrass = function(posx, posz) {
 
 
 THREE.Spring.prototype.addBasin = function() {
-    var r1 = 5, r2 = 3, th = 2, h = 3;
+    
+    var brickmap = new THREE.ImageUtils.loadTexture( 'imgs/brick.jpg' );
+    brickmap.wrapS = THREE.RepeatWrapping;
+    brickmap.wrapT = THREE.RepeatWrapping; 
+    brickmap.repeat.set(1,10);
+    
+    var r1 = 9, r2 = 5, th = 3, h = 3;
      var inner = new THREE.CylinderGeometry( r1, r2, h, 8 );
      var outer = new THREE.CylinderGeometry( r1 + th, r2 + th, h, 8 );
     var inn = new ThreeBSP( inner );
     var out = new ThreeBSP( outer );
     var basingeo = out.subtract(inn).toGeometry();
     
-    var basinmat = new THREE.MeshBasicMaterial( { 
-        color: 0x663333
+    var basinmat = new THREE.MeshLambertMaterial( { 
+        color: 0x7d4d3a,
+        map: brickmap
+        
         
     });
     
-    var basin = new THREE.Mesh(basingeo, basinmat); 
-    basin.position.y = h/2;
-     
+    this.basin = new THREE.Mesh(basingeo, basinmat); 
+    this.basin.position.y = h/2;
+    this.basin.thick = h;
+    this.basin.r2 = r2;
+//    console.log()
     
-    this.group.add(basin);
+    this.group.add(this.basin);
     
 }
 
-THREE.Spring.prototype.addStones = function() {
+THREE.Spring.prototype.addStones = function(x=0,y=0, r=-1,cnt=25) {
     
+    if (r == -1) r = this.basin.r2;
+    
+    
+    var rockmap = new THREE.ImageUtils.loadTexture( 'imgs/rock1.jpg' );
+    rockmap.wrapS = THREE.RepeatWrapping;
+    rockmap.wrapT = THREE.RepeatWrapping; 
+    rockmap.repeat.set(1,2);
+//    rockmap.offset.x = ( 300 / 100 ) * rockmap.repeat.x;
+//    rockmap.offset.y = ( 400 / 100 ) * rockmap.repeat.y;
+    var stonemat = new THREE.MeshLambertMaterial( { 
+        color: 0x727272,
+        map:rockmap
+    }); 
+    
+    var stonegroup = new THREE.Group();
+    
+    var stonecnt = 10;
+    for(var i = 0; i < cnt; i++) {
+        var newstone = new THREE.Mesh(this.makeStone(), stonemat);
+        var ang = Math.random() * Math.PI * 2;
+        newstone.rotation.x = Math.PI/2;
+        newstone.position.x = (r + THREE.Math.randFloat(5,8)) * Math.cos(ang);
+        newstone.position.z = (r + THREE.Math.randFloat(5,8)) * Math.sin(ang);
+        newstone.scale.y = 1.5*Math.random() + 0.2;
+        newstone.position.y = 1.5 - 2*Math.random();
+        stonegroup.add(newstone);
+        
+    }
+    stonegroup.position.x = x;
+    stonegroup.position.z = y;
+    
+    this.group.add(stonegroup);
+}
+
+THREE.Spring.prototype.makeStone = function() {
     var stonesp = new THREE.Shape();
     var cnt = 5;
     var r;
@@ -175,17 +362,17 @@ THREE.Spring.prototype.addStones = function() {
                        r *  Math.sin(ang));
 //    flrshape.lineTo(r, 0);w
      
-    var extrudeSettings = { amount: 1, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+    var extrudeSettings = { 
+        amount: 1,
+        bevelEnabled: true, 
+        bevelSegments: 2, 
+        steps: 2, 
+        bevelSize: 1, 
+       bevelThickness: 1 };
 
 
     var stonegeo = new THREE.ExtrudeGeometry( stonesp, extrudeSettings );
     
-    var stonemat = new THREE.MeshLambertMaterial( { 
-        color: 0xdddddd 
-    });
-    var stone = new THREE.Mesh(stonegeo, stonemat);
-    stone.position.y = 1;
-    stone.position.x = 15;
-    stone.rotation.x = Math.PI/2;
-    this.group.add(stone);
+    
+    return stonegeo;
 }
