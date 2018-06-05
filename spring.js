@@ -62,6 +62,8 @@ THREE.Spring.prototype.addObjs = function(scene){
     
     this.addPetals();
     
+    
+			 
 }
 
 /////////////////////////////////////////////////

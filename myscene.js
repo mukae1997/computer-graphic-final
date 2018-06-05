@@ -5,8 +5,28 @@ var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff,
 var TWO_PI = Math.PI * 2;
 var islandThick = 4;
 
-var seaGeo;
+var sea;
 var sp;
+
+var perlin = new ImprovedNoise();
+
+// water reflection
+
+var mirrorCamera = null; 
+var mirrorTexture = new THREE.WebGLRenderTarget( 512, 
+                                               512, parameters);
+var mirrormat = null;
+var uniforms = null;
+
+var parameters = {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBFormat,
+    stencilBuffer: false
+};
+var textureMatrix = new THREE.Matrix4();
+var rotationMatrix = new THREE.Matrix4();
+
 ///////////////////////////////////
  
 init();
@@ -18,7 +38,7 @@ animate();
 
 //////////////////////////////////////////
 function update(){
-    updateSeaGeo();
+    sea.update(renderer, scene, camera);
     sp.update();
     winter.update();
 }
@@ -83,50 +103,11 @@ function addPath(){
 //    scene.add(brick);
 }
 
-function updateSeaGeo(){
-    var seapos = seaGeo.vertices;
-    var dt = new Date();
-    
-    for (var j = 0; j < 50; j++){
-        for (var i = 0; i < 50; i++) {
-            seapos[j*50+i].z = 3.4 * THREE.Math.mapLinear(Math.sin(j + dt.getTime() * 0.003) + Math.cos(j%50*2 + dt.getTime() * 0.002) + Math.cos(seapos[i].x + dt.getTime() * 0.002), -2, 3, -2, 1);
-    //        seapos[i].y = Math.sin(dt.getTime());
-        }
-    }
-    
-    seaGeo.verticesNeedUpdate = true;
-}
 
-function addSea() {
-    
-    seaGeo = new THREE.PlaneGeometry( 700, 700, 50, 50);
-    console.log(seaGeo);
-    
-    updateSeaGeo();
-    
-    var seaMat = new THREE.MeshPhongMaterial( { 
-        color: 0xffffff, 
-        specular: 0x050505,
-        map: THREE.ImageUtils.loadTexture('imgs/sea.jpg')
-        , transparent: true  
-    } );
-    seaMat.color.setHSL( +201/360, 0.72, 0.45 );
-//var grassmat = new THREE.MeshPhongMaterial( { 
-////        color: 0xffffff, 
-//        specular: 0xffffff,
-//        map: THREE.ImageUtils.loadTexture('imgs/thingrass.png')
-//        , transparent: true 
-//        , side:THREE.DoubleSide
-////        , 
-////        blending:THREE.MultiplyBlending
-////        format: THREE.RGBAFormat
-////        
-//    });
-    var sea = new THREE.Mesh( seaGeo, seaMat );
-    sea.rotation.x = -Math.PI/2;
-    
-    
-    scene.add(sea);
+function addSea() { 
+    sea = new THREE.Sea(0,0); 
+    sea.init(camera);
+    scene.add(sea.group);
 
 }
 function addIsland() {
@@ -145,10 +126,13 @@ function addIsland() {
     var extrudeSettings = { amount: 1, bevelEnabled: true, bevelSegments: 4, steps: 2, bevelSize: 1, bevelThickness: islandThick };
 
     var islandgeo = new THREE.ExtrudeGeometry( islandShape, extrudeSettings );
+    
+    
+    islandgeo.verticesNeedUpdate = true;
 
     var island = new THREE.Mesh( islandgeo, new THREE.MeshLambertMaterial( ) );
-    island.rotation.x = Math.PI/2;
-    island.rotation.x = Math.PI/2;
+    island.rotation.x = Math.PI/2; 
+    
 
     scene.add(island);
 }
@@ -284,3 +268,5 @@ function setTestHelper()
    addFlower(0xc14d00, new THREE.Vector3(islandR/2,islandThick,islandR/2));
     
  }
+
+
