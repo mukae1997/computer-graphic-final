@@ -5,7 +5,7 @@ var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff,
 var TWO_PI = Math.PI * 2;
 var islandThick = 4;
 
-var sea;
+var sea, boat;
 var sp;
 
 var perlin = new ImprovedNoise();
@@ -27,11 +27,13 @@ var parameters = {
 var textureMatrix = new THREE.Matrix4();
 var rotationMatrix = new THREE.Matrix4();
 
+var composer;
+
 ///////////////////////////////////
  
 init();
 addControls();
-setTestHelper();
+//setTestHelper();
 addObjs();
 
 animate();
@@ -39,8 +41,12 @@ animate();
 //////////////////////////////////////////
 function update(){
     sea.update(renderer, scene, camera);
-    sp.update();
-    winter.update();
+  if(sp)  sp.update();
+   if(winter) winter.update();
+    
+    
+    var dt = new Date(); 
+    if(boat) boat.position.y = 0.5+Math.sin(dt.getTime()*0.003 + Math.PI/2);
 }
 
  function animate() {
@@ -50,15 +56,18 @@ function update(){
     var delta = clock.getDelta();
     update();
     controls.update(delta);
-    renderer.render(scene, camera);
+//    renderer.render(scene, camera);
+     composer.render();
 }; 
 //////////////////////////////////////////////////
 
 function addObjs() {
    addIsland();
    addSea();
+    addLensflare();
    addSky();
    addPath();
+   addBoat();
     
    addSpringObjs();
    addSummerObjs(); 
@@ -104,6 +113,8 @@ function addPath(){
 }
 
 
+
+
 function addSea() { 
     sea = new THREE.Sea(0,0); 
     sea.init(camera);
@@ -130,11 +141,61 @@ function addIsland() {
     
     islandgeo.verticesNeedUpdate = true;
 
-    var island = new THREE.Mesh( islandgeo, new THREE.MeshLambertMaterial( ) );
+    var island = new THREE.Mesh( islandgeo, new THREE.MeshLambertMaterial(
+        {
+            color:0xccb69d
+            
+        }
+    ) );
     island.rotation.x = Math.PI/2; 
+    island.receiveShadow = true;
+//    
+//    var plgeo = new THREE.PlaneGeometry(40,40,40,40);
+//    var plmat = new THREE.MeshLambertMaterial({
+//        color:0x997799
+//        
+//    })
+//    var pl = new THREE.Mesh(plgeo, plmat);
+//    var vts = plgeo.vertices;
+//    for (var i = 0; i < plgeo.vertices.length; i++) {
+//        vts[i].z = THREE.Math.randFloatSpread(Math.random());
+//    }
+//    plgeo.verticesNeedUpdate = true;
+//    scene.add(pl);
+//    
+//    pl.rotation.x = -Math.PI / 2;
+//    pl.position.y = islandThick;
+//    
     
 
     scene.add(island);
+}
+
+function addBoat() { 
+    
+    var mtlLoader = new THREE.MTLLoader();
+    var treept = 'obj/boat/OldBoat_obj/';   
+    var self = this;
+    mtlLoader.setPath( treept );
+    mtlLoader.load( 'OldBoat.mtl', function( materials ) {
+
+        materials.preload();
+
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials( materials );
+        objLoader.setPath( treept );
+        objLoader.load( 'OldBoat.obj', function ( object ) {
+            console.log(object)
+            object.position.set(-59,0,-55);
+            object.scale.setScalar(1); 
+            boat = object;
+//            boat.scale.y = 9;
+            scene.add(object);
+ 
+        }, ()=>{}  , ()=>{}  );
+
+    });
+
 }
 
 function addSky() {
@@ -159,8 +220,9 @@ function addSpringObjs(){
 
     scene.add(springGroup);
     
+    springGroup.castShadow = true;
     
-    
+//    controls.target = new THREE.Vector3(0,0,0);
     controls.target = springGroup.position.clone();
 }
 function addSummerObjs() {
@@ -219,7 +281,15 @@ function addFlower(c, p) {
 
 
 
+function addLensflare() {
+    var textureFlare0 = THREE.ImageUtils.loadTexture( "imgs/rock.jpg" );
 
+    var flareMaterial = new THREE.SpriteMaterial( { map: textureFlare0, useScreenCoordinates: false, color: 0xf8ce9c, fog: false, blending: THREE.AdditiveBlending } );
+    sun = new THREE.Sprite( flareMaterial );
+    sun.scale.set( 2000, 2000, 1 );
+    sun.position.set(sea.lightpos);
+    scene.add(sun);
+}
 
 
 
@@ -237,15 +307,36 @@ function init() {
     renderer = new THREE.WebGLRenderer({
 			alpha: true
 		});
+    
+    renderer.shadowMap.enabled = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
     camera.position.y = 25; 
     camera.position.z = 5;
     
-    scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
+    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
+    scene.add(heml);
     
 	clock = new THREE.Clock();
+    
+    var ambl = new THREE.AmbientLight( 0x404040, 0.5 ); // soft white light
+    scene.add( ambl );
+    
+    // postprocessing
+    composer = new THREE.EffectComposer( renderer );
+    composer.addPass( new THREE.RenderPass( scene, camera ) );
+    
+    
+//    var effect = new THREE.ShaderPass( THREE.DotScreenShader );
+//    effect.uniforms[ 'scale' ].value = 4;
+//    
+//				effect.renderToScreen = true;
+    var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.35, 0.35, 0.75 );
+    //1.0, 9, 0.5, 512);
+				bloomPass.renderToScreen = true;
+    composer.addPass( bloomPass );
+
 
 }
 function addControls() {
@@ -268,5 +359,6 @@ function setTestHelper()
    addFlower(0xc14d00, new THREE.Vector3(islandR/2,islandThick,islandR/2));
     
  }
+
 
 

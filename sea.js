@@ -10,7 +10,6 @@ THREE.Sea = function (x=0,y=0) {
     stencilBuffer: false
 });
     this.textureMatrix = new THREE.Matrix4();
- 
     
     
     
@@ -19,6 +18,7 @@ THREE.Sea = function (x=0,y=0) {
 }
 THREE.Sea.prototype.init = function(camera) {
     this.mirrorCamera = camera.clone();
+    
     
     
     
@@ -42,6 +42,9 @@ THREE.Sea.prototype.init = function(camera) {
         viewPos: {
             type:"v3", value: camera.position
         },
+        ilightPos: {
+            type:"v3", value: undefined
+        },
         transform: {
             type: "m4", value: new THREE.Matrix4()
         },
@@ -51,6 +54,14 @@ THREE.Sea.prototype.init = function(camera) {
         },
         textureMatrix : {
             type: "m4", value: this.textureMatrix 
+        }
+        ,
+        normalSampler: {
+            type: 't',
+            value: new THREE.TextureLoader().load( 'imgs/seanorm.jpg', function ( texture ) {
+							texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                
+		    })
         }
         
     };
@@ -66,7 +77,10 @@ THREE.Sea.prototype.init = function(camera) {
     
 
     
-    this.sea = new THREE.Mesh( this.seaGeo, seaMat );
+    this.sea = new THREE.Mesh( this.seaGeo, this.mirrormat );
+    
+    this.sea.lightpos = new THREE.Vector3(650.0,38.0,950.0);
+    this.uniforms.ilightPos.value = this.sea.lightpos;
     
     this.sea.rotation.x = -Math.PI/2;
     
@@ -127,7 +141,7 @@ THREE.Sea.prototype.updateSeaGeo = function (){
 //            }
 //               console.log(perlin.noise(frequency*x,frequency*x,frequency*x))
             
-            seapos[j*50+i].z = 3.4 * THREE.Math.mapLinear(Math.sin(j + dt.getTime() * 0.003) + Math.cos(j%50*2 + dt.getTime() * 0.002) + Math.cos(seapos[i].x + dt.getTime() * 0.002), -2, 3, -2, 1);
+            seapos[j*50+i].z = 2.0 * THREE.Math.mapLinear(Math.sin(j + dt.getTime() * 0.003) + Math.cos(j%50*2 + dt.getTime() * 0.002) + Math.cos(seapos[i].x + dt.getTime() * 0.002), -2, 3, -2, 1);
 //            seapos[j*50+i].z = y;
             
             

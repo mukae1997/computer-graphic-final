@@ -1,3 +1,6 @@
+var grasstex = THREE.ImageUtils.loadTexture('imgs/thingrass.png');
+var grasstex2 = THREE.ImageUtils.loadTexture('imgs/grass2.png');
+var grasstex3 = THREE.ImageUtils.loadTexture('imgs/grass3.png');
 THREE.Spring = function(){
     
     this.type = "spring";
@@ -26,6 +29,7 @@ THREE.Spring.prototype.addObjs = function(scene){
         this.addFlower(20,20, 0.2);
         this.addFlower(25,22, 0.15, Math.PI*1.5);
         this.addFlower(20,23, 0.17, Math.PI/8);
+        this.addFlower(23,23, 0.17, Math.PI/8);
         
     });
     this.loadTreeobj(()=>{
@@ -38,15 +42,27 @@ THREE.Spring.prototype.addObjs = function(scene){
          
     });
     
+    
+    
     this.addGrass(-7, -7);
+    this.addGrass(-7, -7,1.5,10);
     this.addGrass(-14, -8);
     this.addGrass(-17, 30,2.5,4);
+    this.addGrass(-17, 30,2.5,8);
+    this.addGrass(9, 30, 2.5,8);
+    this.addGrass(25, 20, 2.5,8);
     this.addGrass(20, -10);
     
     this.addBasin();
-    this.addGrass(0, 0, 3, 6);
-    this.addGrass(-12, 16, 3, 3);
-    this.addGrass(0, 30, 1.3, 4);
+    this.addGrass(0, 0, 3, 6); 
+    this.addGrass(-10, 13, 2, 5);
+    this.addGrass(-14, 20, 2, 7);
+    this.addGrass(-14, 25, 2, 7);
+    this.addGrass(23, -13, 2, 7);
+    this.addGrass(23, 7, 2, 6);
+    this.addGrass(25, 8, 2, 7);
+    this.addGrass(2, 30, 1.3, 4);
+    this.addGrass(8, 30, 1.3, 6);
     // flowers
     this.addGrass(23, 23, 1.2, 5); 
     
@@ -236,10 +252,11 @@ THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1)
     self.group.add( object ); 
 //    this.trees.push(object);
     
-    var pl =  new THREE.PointLight(0xf8ffc9, 1.48, 30);
+    var pl =  new THREE.PointLight(0xf8ffc9, 1.28, 35);
+//    pl.castShadow = true;
     this.scene.add(pl); 
     var h  =  THREE.Math.mapLinear(scaley,0.01 ,0.05,10,20) ;
-    pl.position.set(object.position.x, h ,object.position.z);
+    pl.position.set(object.position.x, 5+h*20*scaley ,object.position.z);
     pl.position.add(this.group.position);
     var hlper = new THREE.PointLightHelper(pl);
     this.scene.add(hlper);
@@ -248,11 +265,21 @@ THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1)
 THREE.Spring.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
     var h = _h;
     var l = 6;
+    var grassmap = grasstex;
+    if (Math.random() > 0.5) {
+        grassmap = grasstex2;
+    }
+    if (Math.random() > 0.5) {
+        grassmap = grasstex3;
+        l = 12;
+        h = _h*0.9;
+    }
     var grasspln = new THREE.PlaneGeometry(l,h);
+    
     var grassmat = new THREE.MeshPhongMaterial( { 
 //        color: 0xffffff, 
         specular: 0xbbbbbb,
-        map: THREE.ImageUtils.loadTexture('imgs/thingrass.png')
+        map: grassmap
         , transparent: true 
         , side:THREE.DoubleSide
         , alphaTest: 0.5
@@ -267,7 +294,7 @@ THREE.Spring.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
     
     var grassgrp = new THREE.Group();
     
-    for (var i = 0 ; i < 35; i++) {
+    for (var i = 0 ; i < 55; i++) {
         var agrass = grass.clone();
         var ang = i * 0.3;
         agrass.rotateOnWorldAxis(new THREE.Vector3(0,1,0),
@@ -304,6 +331,9 @@ THREE.Spring.prototype.addBasin = function() {
     });
     
     this.basin = new THREE.Mesh(basingeo, basinmat); 
+    
+    this.basin.receiveShadow = true;
+    
     this.basin.position.y = h/2;
     this.basin.thick = h;
     this.basin.r2 = r2;
@@ -329,11 +359,15 @@ THREE.Spring.prototype.addStones = function(x=0,y=0, r=-1,cnt=25) {
         map:rockmap
     }); 
     
+    
+    
     var stonegroup = new THREE.Group();
     
     var stonecnt = 10;
     for(var i = 0; i < cnt; i++) {
         var newstone = new THREE.Mesh(this.makeStone(), stonemat);
+        newstone.receiveShadow = true;
+        newstone.castShadow = true;
         var ang = Math.random() * Math.PI * 2;
         newstone.rotation.x = Math.PI/2;
         newstone.position.x = (r + THREE.Math.randFloat(5,8)) * Math.cos(ang);
@@ -345,6 +379,9 @@ THREE.Spring.prototype.addStones = function(x=0,y=0, r=-1,cnt=25) {
     }
     stonegroup.position.x = x;
     stonegroup.position.z = y;
+    
+    stonegroup.receiveShadow = true;
+    
     
     this.group.add(stonegroup);
 }
