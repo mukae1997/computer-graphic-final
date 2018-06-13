@@ -7,6 +7,7 @@ var islandThick = 4;
 
 var sea, boat;
 var sp;
+var fall;
 
 var perlin = new ImprovedNoise();
 
@@ -43,6 +44,7 @@ function update(){
     sea.update(renderer, scene, camera);
   if(sp)  sp.update();
    if(winter) winter.update();
+    if(fall) fall.update();
     
     
     var dt = new Date(); 
@@ -231,7 +233,14 @@ function addSummerObjs() {
     
 }
 function addFallObjs() {
+    fall = new THREE.Fall(); 
+    var fallGroup = fall.group; 
+    fallGroup.position.set(islandR/2,islandThick + .05, islandR/2);
+
     
+    fall.addObjs(scene);
+    scene.add(fallGroup);
+    controls.target = fallGroup.position.clone();
     
     
 }
