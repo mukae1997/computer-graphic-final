@@ -33,44 +33,51 @@ THREE.Spring.prototype.addObjs = function(scene){
         
     });
     this.loadTreeobj(()=>{
-        this.addObjTree(0,0,1,0.05);
-        this.addObjTree(0,30, -Math.PI/2);
-        this.addObjTree(-20,30, Math.PI/2,0.02);
-        this.addObjTree(-15,15, Math.PI/2);
-        this.addObjTree(13,19, -Math.PI/4);
-        this.addObjTree(25, -13, Math.PI/9); 
+        this.addObjTree(-5,-5,1,0.05);
+        this.addObjTree(16,6, -Math.PI/2);
+        this.addObjTree(-24,23, Math.PI/4, 0.02);
+        this.addObjTree(-18,15, Math.PI/2*0.7);
+        this.addObjTree(9,26, -Math.PI/4);
+        this.addObjTree(25, -16, Math.PI/9); 
          
     });
     
     
-    
-    this.addGrass(-7, -7);
-    this.addGrass(-7, -7,1.5,10);
-    this.addGrass(-14, -8);
-    this.addGrass(-17, 30,2.5,4);
-    this.addGrass(-17, 30,2.5,8);
-    this.addGrass(9, 30, 2.5,8);
-    this.addGrass(25, 20, 2.5,8);
+     
+    this.addGrass(-7, -7,1.5,10); 
+//    this.addGrass(-17, 30,2.5,4);
+//    this.addGrass(-17, 30,2.5,8);
+//    this.addGrass(9, 30, 2.5,8);
+//    this.addGrass(25, 20, 2.5,8);
     this.addGrass(20, -10);
     
     this.addBasin();
-    this.addGrass(0, 0, 3, 6); 
-    this.addGrass(-10, 13, 2, 5);
-    this.addGrass(-14, 20, 2, 7);
-    this.addGrass(-14, 25, 2, 7);
-    this.addGrass(23, -13, 2, 7);
+    this.addGrass(0, 0, 3, 6);  
+    this.addGrass(-22, 3, 2, 5);
+//    this.addGrass(-14, 20, 2, 7);
+    this.addGrass(-20, 20, 2, 9);
+    this.addGrass(5, 22, 1.2, 7);
+    this.addGrass(3, 20, 1.2, 7);
+    this.addGrass(-22-5, 3, 2, 5);
+    this.addGrass(-20-5, 20, 2, 7);
+    this.addGrass(-23-5, 20, 2, 9);
+    
+//    this.addGrass(-14, 25, 2, 7);
+    this.addGrass(23, -13, 3, 7);
+    this.addGrass(5, -18, 3, 8);
     this.addGrass(23, 7, 2, 6);
     this.addGrass(25, 8, 2, 7);
-    this.addGrass(2, 30, 1.3, 4);
-    this.addGrass(8, 30, 1.3, 6);
+//    this.addGrass(2, 30, 1.3, 8);
+    this.addGrass(13, 27, 1.3, 6);
+//    this.addGrass(-20, 30, 2.3, 6);
     // flowers
     this.addGrass(23, 23, 1.2, 5); 
     
     
-    this.addStones(0,0,5,100);
-    this.addStones(-6,30,2,8);
+    this.addStones(-5,-5,5,100);
+    this.addStones(-20,15,2,8);
 //    this.addStones(-5,27,2,8);
-    this.addStones(25,-5,2,8);
+    this.addStones(25,-20,2,48);
     this.addStones(18,19,0,8);
     
     this.addStones(22,22,0,18);
@@ -79,6 +86,18 @@ THREE.Spring.prototype.addObjs = function(scene){
     this.addPetals();
     
     
+//    var pl =  new THREE.PointLight(0xf899dd,1.6, 120 );
+//    pl.castShadow = true;
+////    pl.castShadow = true; 
+//    pl.position.set(20, 90, 20);
+//    pl.position.add(this.group.position);
+//    this.scene.add(pl); 
+//    
+//    var hlper = new THREE.PointLightHelper(pl);
+//    this.scene.add(hlper);
+    
+//    if (pl.position.z < 0) pl.position.z += 3;
+//    if (pl.position.x < 0) pl.position.x += 3;
 			 
 }
 
@@ -252,12 +271,14 @@ THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1)
     self.group.add( object ); 
 //    this.trees.push(object);
     
-    var pl =  new THREE.PointLight(0xf8ffc9, 1.28, 35);
+    var pl =  new THREE.PointLight(0xf8ffc9, 0.8, 35);
 //    pl.castShadow = true;
     this.scene.add(pl); 
     var h  =  THREE.Math.mapLinear(scaley,0.01 ,0.05,10,20) ;
     pl.position.set(object.position.x, 5+h*20*scaley ,object.position.z);
     pl.position.add(this.group.position);
+//    if (pl.position.z < 0) pl.position.z += 3;
+//    if (pl.position.x < 0) pl.position.x += 3;
     var hlper = new THREE.PointLightHelper(pl);
     this.scene.add(hlper);
 }
@@ -278,6 +299,8 @@ THREE.Spring.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
     
     var grassmat = new THREE.MeshPhongMaterial( { 
 //        color: 0xffffff, 
+        emissive:0x88ff88,
+        emissiveIntensity:0.4,
         specular: 0xbbbbbb,
         map: grassmap
         , transparent: true 
@@ -335,6 +358,8 @@ THREE.Spring.prototype.addBasin = function() {
     this.basin.receiveShadow = true;
     
     this.basin.position.y = h/2;
+    this.basin.position.x = -5;
+    this.basin.position.z = -5;
     this.basin.thick = h;
     this.basin.r2 = r2;
 //    console.log()

@@ -2,8 +2,7 @@ THREE.Sea = function (x=0,y=0) {
     this.sea = null;
     this.group = new THREE.Group();
     this.mirrorCamera = null;
-    this.mirrorTexture = new THREE.WebGLRenderTarget( 512, 
-                                               512, {
+    this.mirrorTexture = new THREE.WebGLRenderTarget( 512,   512, {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     format: THREE.RGBFormat,

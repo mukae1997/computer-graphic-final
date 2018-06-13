@@ -1,5 +1,5 @@
 var scene, camera, renderer, controls, clock;
-var islandR = 60;
+var islandR = 70;
 var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff, 
                               specular: 0xdddddd } );
 var TWO_PI = Math.PI * 2;
@@ -95,7 +95,7 @@ function addPath(){
     brick.position.y = islandThick+0.1;     
     brick.rotation.x = Math.PI/2;
     
-    var pathr_basic = islandR * 0.55;
+    var pathr_basic = islandR * 0.45;
     var brickcnt = 100;
     for (var i = 0; i < brickcnt; i++) {
         var newbrick = brick.clone();
@@ -215,7 +215,7 @@ function addSky() {
 function addSpringObjs(){
     sp = new THREE.Spring(); 
     var springGroup = sp.group; 
-    springGroup.position.set(-islandR/2,islandThick + .05,-islandR/2);
+    springGroup.position.set(-islandR/2*0.75,islandThick + .05,-islandR/2*0.75);
     sp.addObjs(scene);
 
     scene.add(springGroup);
