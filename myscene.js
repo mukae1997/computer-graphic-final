@@ -323,9 +323,14 @@ function init() {
     camera.position.y = 25; 
     camera.position.z = 5;
     
+<<<<<<< HEAD
     var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
     scene.add(heml);
     
+=======
+    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
+    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
+>>>>>>> winter
 	clock = new THREE.Clock();
     
     var ambl = new THREE.AmbientLight( 0x404040, 0.5 ); // soft white light
