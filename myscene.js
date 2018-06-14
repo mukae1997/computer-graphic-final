@@ -243,8 +243,8 @@ function init() {
     camera.position.y = 25; 
     camera.position.z = 5;
     
-    scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
-    
+    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
+    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
 	clock = new THREE.Clock();
 
 }
