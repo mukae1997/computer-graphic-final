@@ -114,13 +114,14 @@ THREE.Fall.prototype.loadTreeobj = function(callback) {
     var self = this;
     mtlLoader.setPath( treept);
     mtlLoader.load( 'BL16a.mtl', function( materials ) {
-        materials.alphaTest = 0.5;
-        materials.depthTest = true;
-        materials.transparent = true;
-        materials.side = THREE.DoubleSide;
 
         materials.preload();
         
+        var mat = materials.materials;
+        for (var key in mat) {
+            console.log(key);
+            mat[key].transparent = true;
+        }
 
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
@@ -170,6 +171,11 @@ THREE.Fall.prototype.loadCropobj = function(callback) {
 
         materials.preload();
         
+        var mat = materials.materials;
+        for (var key in mat) {
+            console.log(key);
+            mat[key].transparent = true;
+        }
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
