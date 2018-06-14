@@ -342,18 +342,23 @@ function init() {
 //				effect.renderToScreen = true;
     var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.35, 0.35, 0.75 );
     //1.0, 9, 0.5, 512);
-				bloomPass.renderToScreen = true;
+    bloomPass.renderToScreen = true;
     composer.addPass( bloomPass );
 
 
 }
 function addControls() {
-    
-//    controls = new THREE.FirstPersonControls( camera   );
-//				controls.movementSpeed = 10;
-//				controls.lookSpeed = 0.3;
-    
+    if (false) {
+         controls = new THREE.FirstPersonControls( camera   );
+				controls.movementSpeed = 10;
+				controls.lookSpeed = 0.3;
+    } else {
      controls = new THREE.OrbitControls( camera ); 
+        
+    }
+    
+   
+    
 }
 function setTestHelper()
  {

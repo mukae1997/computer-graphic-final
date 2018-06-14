@@ -117,12 +117,22 @@ THREE.Fall.prototype.loadTreeobj = function(callback) {
 
         materials.preload();
         
+        
         var mat = materials.materials;
         for (var key in mat) {
-            console.log(key);
+            console.log(key)
             mat[key].transparent = true;
+            mat[key].alphatest = 0.5;
         }
+        
+//        console.log(materials)
 
+//        materials.alphaTest = 0.5;
+//        materials.depthTest = true;
+//        materials.blending = THREE.AdditiveBlending;
+////        materials.transparent = true;
+//        materials.side = THREE.DoubleSide;
+        
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
@@ -171,11 +181,6 @@ THREE.Fall.prototype.loadCropobj = function(callback) {
 
         materials.preload();
         
-        var mat = materials.materials;
-        for (var key in mat) {
-            console.log(key);
-            mat[key].transparent = true;
-        }
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
@@ -213,7 +218,7 @@ THREE.Fall.prototype.addleaves = function () {
         depthTest: true, 
         transparent : true,
         side:THREE.DoubleSide,
-        alphaTest: 0.5,
+        alphaTest: 0.5
         //color:0xd23c28
     } );
     this.petals = new THREE.Points(geometry, mat);
