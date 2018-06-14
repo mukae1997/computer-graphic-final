@@ -1,0 +1,55 @@
+#  ==========================================================================
+#  Wavefront Material file
+#  Exported by Red-i Productions' "Riptide Pro"
+#  (a commercial plugin for Cinema 4D PC & Mac, R9.6 or later)
+#  
+#  Red-i Productions
+#  http://skinprops.com
+#  
+#  ==========================================================================
+
+newmtl default_Mat
+illum 0
+Kd 0.800000 0.800000 0.800000
+
+newmtl VG02lef3
+Ns 50.781250
+illum 0
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.600000 1.000000 1.000000
+Ke 0.100000 0.100000 0.100000
+Ni 1.000000
+map_d VG02lef3_a.png
+map_Kd VG02lef3.png
+
+
+newmtl VG02lef2
+Ns 50.781250
+illum 0
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+map_Kd VG02lef2.png
+map_d VG02lef2_a.png
+
+newmtl VG02lef1
+Ns 50.781250
+illum 0
+Kd 1.000000 1.000000 1.000000
+Ks 0.600000 1.000000 1.000000
+map_Kd VG02lef1.png
+map_d VG02lef1_a.png
+
+newmtl VG02brn1
+Ns 50.781250
+illum 0
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+map_Kd VG02brn1.png
+
+newmtl VG02frt1
+Ns 50.781250
+illum 0
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+map_Kd VG02frt1.png

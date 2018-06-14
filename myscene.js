@@ -14,8 +14,7 @@ var perlin = new ImprovedNoise();
 // water reflection
 
 var mirrorCamera = null; 
-var mirrorTexture = new THREE.WebGLRenderTarget( 512, 
-                                               512, parameters);
+var mirrorTexture = new THREE.WebGLRenderTarget( 512, 512, parameters);
 var mirrormat = null;
 var uniforms = null;
 
