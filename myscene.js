@@ -7,7 +7,7 @@ var islandThick = 4;
 
 var sea, boat;
 var sp;
-var fall;
+var fall, winter;
 
 var perlin = new ImprovedNoise();
 
@@ -27,6 +27,11 @@ var parameters = {
 var textureMatrix = new THREE.Matrix4();
 var rotationMatrix = new THREE.Matrix4();
 
+var physicsWorld = null, cloth = null;
+// Physics variables
+var gravityConstant = -9.8;
+var margin = 0.05;
+
 var composer;
 
 ///////////////////////////////////
@@ -36,18 +41,41 @@ addControls();
 //setTestHelper();
 addObjs();
 
+
 animate();
 
 //////////////////////////////////////////
 function update(){
     sea.update(renderer, scene, camera);
   if(sp)  sp.update();
-   if(winter) winter.update();
+   if (winter) winter.update();
     if(fall) fall.update();
     
     
     var dt = new Date(); 
     if(boat) boat.position.y = 0.5+Math.sin(dt.getTime()*0.003 + Math.PI/2);
+    
+    
+    // Update cloth
+    if (cloth) {
+        var softBody = cloth.userData.physicsBody;
+        var clothPositions = cloth.geometry.attributes.position.array;
+        var numVerts = clothPositions.length / 3;
+        var nodes = softBody.get_m_nodes();
+        var indexFloat = 0;
+        for ( var i = 0; i < numVerts; i ++ ) {
+            var node = nodes.at( i );
+            var nodePos = node.get_m_x();
+            clothPositions[ indexFloat++ ] = nodePos.x();
+            clothPositions[ indexFloat++ ] = nodePos.y();
+            clothPositions[ indexFloat++ ] = nodePos.z();
+        }
+        cloth.geometry.computeVertexNormals();
+        cloth.geometry.attributes.position.needsUpdate = true;
+        cloth.geometry.attributes.normal.needsUpdate = true;
+    }
+    
+
 }
 
  function animate() {
@@ -69,6 +97,7 @@ function addObjs() {
    addSky();
    addPath();
    addBoat();
+   addFlag();
     
    addSpringObjs();
    addSummerObjs(); 
@@ -142,9 +171,17 @@ function addIsland() {
     
     islandgeo.verticesNeedUpdate = true;
 
+    var brickmap = new THREE.ImageUtils.loadTexture( 'imgs/sand.jpeg' );
+    brickmap.wrapS = THREE.RepeatWrapping;
+    brickmap.wrapT = THREE.RepeatWrapping; 
+    brickmap.repeat.set(.1,.21);
+    
     var island = new THREE.Mesh( islandgeo, new THREE.MeshLambertMaterial(
         {
-            color:0xccb69d
+            color:0xccb69d,
+            emissive:0x222222,
+            map:brickmap,
+            opacity:0.5
             
         }
     ) );
@@ -239,7 +276,7 @@ function addFallObjs() {
     
     fall.addObjs(scene);
     scene.add(fallGroup);
-    controls.target = fallGroup.position.clone();
+//    controls.target = fallGroup.position.clone();
     
     
 }
@@ -323,14 +360,11 @@ function init() {
     camera.position.y = 25; 
     camera.position.z = 5;
     
-<<<<<<< HEAD
     var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
     scene.add(heml);
     
-=======
-    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
-    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
->>>>>>> winter
+//    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
+//    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
 	clock = new THREE.Clock();
     
     var ambl = new THREE.AmbientLight( 0x404040, 0.5 ); // soft white light
@@ -350,7 +384,7 @@ function init() {
     bloomPass.renderToScreen = true;
     composer.addPass( bloomPass );
 
-
+    initPhysics();
 }
 function addControls() {
     if (false) {
@@ -377,6 +411,64 @@ function setTestHelper()
    addFlower(0xc14d00, new THREE.Vector3(islandR/2,islandThick,islandR/2));
     
  }
+function initPhysics() {
+				// Physics configuration
+				var collisionConfiguration = new Ammo.btSoftBodyRigidBodyCollisionConfiguration();
+				var dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration );
+				var broadphase = new Ammo.btDbvtBroadphase();
+				var solver = new Ammo.btSequentialImpulseConstraintSolver();
+				var softBodySolver = new Ammo.btDefaultSoftBodySolver();
+				physicsWorld = new Ammo.btSoftRigidDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration, softBodySolver);
+				physicsWorld.setGravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
+				physicsWorld.getWorldInfo().set_m_gravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
+}
 
+function addFlag() {
+    var cloth;
 
+    // The cloth
+    // Cloth graphic object
+    var clothWidth = 4;
+    var clothHeight = 3;
+    var clothNumSegmentsZ = clothWidth * 5;
+    var clothNumSegmentsY = clothHeight * 5;
+    var clothSegmentLengthZ = clothWidth / clothNumSegmentsZ;
+    var clothSegmentLengthY = clothHeight / clothNumSegmentsY;
+    var clothPos = new THREE.Vector3( -3, 13, 2 );
+    //var clothGeometry = new THREE.BufferGeometry();
+    var clothGeometry = new THREE.PlaneBufferGeometry( clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY );
+    clothGeometry.rotateY( Math.PI * 0.5 );
+    clothGeometry.translate( clothPos.x, clothPos.y + clothHeight * 0.5, clothPos.z - clothWidth * 0.5 );
+    //var clothMaterial = new THREE.MeshLambertMaterial( { color: 0x0030A0, side: THREE.DoubleSide } );
+    var clothMaterial = new THREE.MeshLambertMaterial( { color: 0xFFFFFF, side: THREE.DoubleSide } );
+    cloth = new THREE.Mesh( clothGeometry, clothMaterial );
+    cloth.castShadow = true;
+    cloth.receiveShadow = true;
+    scene.add( cloth );
+    new THREE.TextureLoader().load( "imgs/brick.jpg", function( texture ) {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set( clothNumSegmentsZ, clothNumSegmentsY );
+        cloth.material.map = texture;
+        cloth.material.needsUpdate = true;
+    } );
+    
+    // Cloth physic object
+    var softBodyHelpers = new Ammo.btSoftBodyHelpers();
+    var clothCorner00 = new Ammo.btVector3( clothPos.x, clothPos.y + clothHeight, clothPos.z );
+    var clothCorner01 = new Ammo.btVector3( clothPos.x, clothPos.y + clothHeight, clothPos.z - clothWidth );
+    var clothCorner10 = new Ammo.btVector3( clothPos.x, clothPos.y, clothPos.z );
+    var clothCorner11 = new Ammo.btVector3( clothPos.x, clothPos.y, clothPos.z - clothWidth );
+    var clothSoftBody = softBodyHelpers.CreatePatch( physicsWorld.getWorldInfo(), clothCorner00, clothCorner01, clothCorner10, clothCorner11, clothNumSegmentsZ + 1, clothNumSegmentsY + 1, 0, true );
+    var sbConfig = clothSoftBody.get_m_cfg();
+    sbConfig.set_viterations( 10 );
+    sbConfig.set_piterations( 10 );
+    clothSoftBody.setTotalMass( 0.9, false );
+    Ammo.castObject( clothSoftBody, Ammo.btCollisionObject ).getCollisionShape().setMargin( margin * 3 );
+    physicsWorld.addSoftBody( clothSoftBody, 1, -1 );
+    cloth.userData.physicsBody = clothSoftBody;
+    // Disable deactivation
+    clothSoftBody.setActivationState( 4 );
+
+}
 

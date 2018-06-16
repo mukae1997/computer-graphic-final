@@ -45,6 +45,7 @@ THREE.Spring.prototype.addObjs = function(scene){
     
      
     this.addGrass(-7, -7,1.5,10); 
+    this.addGrass(-7, -7,3.,5); 
 //    this.addGrass(-17, 30,2.5,4);
 //    this.addGrass(-17, 30,2.5,8);
 //    this.addGrass(9, 30, 2.5,8);
@@ -52,7 +53,6 @@ THREE.Spring.prototype.addObjs = function(scene){
     this.addGrass(20, -10);
     
     this.addBasin();
-    this.addGrass(0, 0, 3, 6);  
     this.addGrass(-22, 3, 2, 5);
 //    this.addGrass(-14, 20, 2, 7);
     this.addGrass(-20, 20, 2, 9);
@@ -271,7 +271,7 @@ THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1)
     self.group.add( object ); 
 //    this.trees.push(object);
     
-    var pl =  new THREE.PointLight(0xf8ffc9, 0.8, 35);
+    var pl =  new THREE.PointLight(0xf8ffc9, 0.6, 35);
 //    pl.castShadow = true;
     this.scene.add(pl); 
     var h  =  THREE.Math.mapLinear(scaley,0.01 ,0.05,10,20) ;
@@ -280,7 +280,7 @@ THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1)
 //    if (pl.position.z < 0) pl.position.z += 3;
 //    if (pl.position.x < 0) pl.position.x += 3;
     var hlper = new THREE.PointLightHelper(pl);
-    this.scene.add(hlper);
+//    this.scene.add(hlper);
 }
 
 THREE.Spring.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
