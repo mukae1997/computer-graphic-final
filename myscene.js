@@ -1,7 +1,6 @@
 var scene, camera, renderer, controls, clock;
 var islandR = 70;
-var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff, 
-                              specular: 0xdddddd } );
+var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0xdddddd } );
 var TWO_PI = Math.PI * 2;
 var islandThick = 4;
 
