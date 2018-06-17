@@ -7,6 +7,7 @@ var islandThick = 4;
 var sea, boat;
 var sp;
 var fall, winter;
+var summer;
 
 var perlin = new ImprovedNoise();
 
@@ -564,7 +565,12 @@ function addSpringObjs(){
 }
 function addSummerObjs() {
     
-    
+    summer = new THREE.Summer(); 
+    var summerGroup = summer.group; 
+    summerGroup.position.set(islandR/2, islandThick + .05, -islandR/2);
+
+    summer.addObjs(scene);
+    scene.add(summerGroup);
     
 }
 function addFallObjs() {
