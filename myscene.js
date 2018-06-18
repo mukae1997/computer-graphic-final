@@ -8,7 +8,6 @@ var sea, boat;
 var sp;
 var fall, winter;
 var summer;
-var islands = [];
 
 var perlin = new ImprovedNoise();
 
@@ -177,6 +176,34 @@ function addIsland() {
     brickmap.wrapT = THREE.RepeatWrapping; 
     brickmap.repeat.set(.1,.21);
     
+    var island = new THREE.Mesh( islandgeo, new THREE.MeshLambertMaterial(
+        {
+            color:0xccb69d,
+            emissive:0x222222,
+            map:brickmap,
+            opacity:0.5
+            
+        }
+    ) );
+    island.rotation.x = Math.PI/2; 
+    island.receiveShadow = true;
+//    
+//    var plgeo = new THREE.PlaneGeometry(40,40,40,40);
+//    var plmat = new THREE.MeshLambertMaterial({
+//        color:0x997799
+//        
+//    })
+//    var pl = new THREE.Mesh(plgeo, plmat);
+//    var vts = plgeo.vertices;
+//    for (var i = 0; i < plgeo.vertices.length; i++) {
+//        vts[i].z = THREE.Math.randFloatSpread(Math.random());
+//    }
+//    plgeo.verticesNeedUpdate = true;
+//    scene.add(pl);
+//    
+//    pl.rotation.x = -Math.PI / 2;
+//    pl.position.y = islandThick;
+//    
     
     // ------------------------------
     
@@ -593,7 +620,7 @@ function addFlag() {
                 
     scene.add(flagroup); 
     
-    flagroup.position.set(-25,0,0);
+    flagroup.position.set(-25,0,5);
 
 }
 
