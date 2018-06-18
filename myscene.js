@@ -184,6 +184,11 @@ function addIsland() {
                     new THREE.Vector3(islandR/2*1.5,-islandR/2*1.5,),
                     new THREE.Vector3(islandR/2*1.5,islandR/2*1.5,),
                     new THREE.Vector3(-islandR/2*1.5,islandR/2*1.5,)];
+
+    let winterBump = THREE.ImageUtils.loadTexture( "imgs/snowground2.jpg" )
+    winterBump.wrapS = THREE.RepeatWrapping;
+    winterBump.wrapT = THREE.RepeatWrapping;
+    winterBump.repeat.set( 0.01, 0.015 );
     
     var mats = [
         // spring material
@@ -214,11 +219,11 @@ function addIsland() {
 
             }),
         // winter material
-                    new THREE.MeshLambertMaterial(
+                    new THREE.MeshBasicMaterial(
             {
-                color:0xccb69d,
-                emissive:0xffffff,
-                map:brickmap,
+                color:0xcfcfcf,
+                map: winterBump,
+                // bumpMap: winterBump,
                 opacity:0.5
 
             })

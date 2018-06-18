@@ -21,15 +21,20 @@ THREE.Winter = function (x = 0, y = 0, z = 0, size = 30, island) {
     this.plane.position.set(x, y, z)
 
     // 光
-    let light = new THREE.PointLight(0xffffff, 1, 0, Math.PI / 2);
-    light.position.set( -30, 10, 60 );
-    this.group.add( light );
+    // let light = new THREE.PointLight(0xffffff, 1, 0, Math.PI / 2);
+    // light.position.set( -30, 10, 60 );
+    // this.group.add( light );
 
     // tree
     let materials = []
-    let material = new THREE.MeshLambertMaterial({
-        // map: THREE.ImageUtils.loadTexture('imgs/snowface.jpg')
-        color: 0xffffff
+    this.snowFace = THREE.ImageUtils.loadTexture('imgs/snowground.jpg')
+    this.snowFace.wrapS = THREE.RepeatWrapping;
+    this.snowFace.wrapT = THREE.RepeatWrapping;
+    this.snowFace.repeat.set( 0.01, 0.015 );
+
+    let material = new THREE.MeshBasicMaterial({
+        map: this.snowFace,
+        color: 0xdfdfdf
     })
     materials.push(material)
     material = new THREE.MeshLambertMaterial({
@@ -40,6 +45,7 @@ THREE.Winter = function (x = 0, y = 0, z = 0, size = 30, island) {
     let materials2 = materials.slice()
     materials2.reverse()
     this.loadTree('obj/wtree4/file.obj', materials2, this.position.x + 20, this.position.y, this.position.z + 16, Math.PI / 2)
+    
     this.loadHouse()
 
     // 雪人
@@ -207,8 +213,11 @@ THREE.Winter.prototype.loadHouse = function (path='obj/pavilion/file.obj') {
         let materials = []
         let material = new THREE.MeshLambertMaterial({color: 0x000000})
         materials.push(material)
-        material = new THREE.MeshLambertMaterial({
-            map: THREE.ImageUtils.loadTexture('imgs/snowface.jpg')
+        material = new THREE.MeshBasicMaterial({
+            // map: THREE.ImageUtils.loadTexture('imgs/snowface.jpg')
+            color: 0xcccccc,
+            map: winter.snowFace,
+            opacity:0.5
         })
         materials.push(material)
         material = new THREE.MeshLambertMaterial({
@@ -297,15 +306,18 @@ function snowman(x, y, z) {
     man = new THREE.Group();
 
     let geometry = new THREE.SphereGeometry( 3, 32, 32 );
-    let material = new THREE.MeshBasicMaterial({color: 0xffffff});
+    let material = new THREE.MeshBasicMaterial({
+        color: 0xcfcfcf
+    });
     let head = new THREE.Mesh( geometry, material );
     head.position.set(x, y, z)
     man.add(head)
 
     geometry = new THREE.SphereGeometry(5, 32, 32);
     let texture = THREE.ImageUtils.loadTexture( "imgs/snowbody.png" );
-    material = new THREE.MeshLambertMaterial({
-        map: texture
+    material = new THREE.MeshBasicMaterial({
+        map: texture,
+        color: 0xcfcfcf
     });
     let body = new THREE.Mesh(geometry, material);
     body.position.set(x, y - 6, z)
@@ -321,21 +333,21 @@ function snowman(x, y, z) {
     man.add(eye2)
 
     geometry = new THREE.ConeGeometry(0.6, 1, 32)
-    material = new THREE.MeshLambertMaterial( {color: 0xff0000} );
+    material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
     let nose = new THREE.Mesh(geometry, material)
     nose.position.set(x, y, z + 3)
     nose.rotateX(Math.PI / 2)
     man.add(nose)
 
     geometry = new THREE.CylinderGeometry( 0.3, 0.6, 4 );
-    material = new THREE.MeshLambertMaterial( {color: 0x000000} );
+    material = new THREE.MeshBasicMaterial( {color: 0x000000} );
     let lefthand = new THREE.Mesh( geometry, material );
     lefthand.position.set(x - 5, y - 3, z)
     lefthand.rotateX(Math.PI / 3)
     lefthand.rotateZ(Math.PI / 2)
     man.add(lefthand)
     geometry = new THREE.CylinderGeometry( 0.6, 0.3, 4 );
-    material = new THREE.MeshLambertMaterial( {color: 0x000000} );
+    material = new THREE.MeshBasicMaterial( {color: 0x000000} );
     let righthand = new THREE.Mesh( geometry, material );
     righthand.rotateX(Math.PI / 3)
     righthand.rotateZ(Math.PI / 2)

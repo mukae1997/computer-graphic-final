@@ -487,19 +487,67 @@ function addIsland() {
     brickmap.wrapT = THREE.RepeatWrapping; 
     brickmap.repeat.set(.1,.21);
     
-    var island = new THREE.Mesh( islandgeo, new THREE.MeshLambertMaterial(
-        {
-            color:0xccb69d,
-            emissive:0x222222,
-            map:brickmap,
-            opacity:0.5
-            
-        }
-    ) );
-    island.rotation.x = Math.PI/2; 
-    island.receiveShadow = true;
+    
+    // ------------------------------
+    
+    var boxposes = [new THREE.Vector3(-islandR/2*1.5,-islandR/2*1.5,),
+                    new THREE.Vector3(islandR/2*1.5,-islandR/2*1.5,),
+                    new THREE.Vector3(islandR/2*1.5,islandR/2*1.5,),
+                    new THREE.Vector3(-islandR/2*1.5,islandR/2*1.5,)];
+    
+    var mats = [
+        // spring material
+            new THREE.MeshLambertMaterial(
+            {
+                color:0xffffff,
+//                emissive:0xaaff22,
+                map:brickmap,
+                opacity:0.5
 
-    scene.add(island);
+            }),
+        // summer material
+            new THREE.MeshLambertMaterial(
+            {
+                color:0xccb69d,
+                emissive:0x00ff00,
+                map:brickmap,
+                opacity:0.5
+
+            }),
+        // fall material
+                new THREE.MeshLambertMaterial(
+            {
+                color:0xccb69d,
+                emissive:0xffff00,
+                map:brickmap,
+                opacity:0.5
+
+            }),
+        // winter material
+                    new THREE.MeshLambertMaterial(
+            {
+                color:0xccb69d,
+                emissive:0xffffff,
+                map:brickmap,
+                opacity:0.5
+
+            })
+
+        ];
+    
+    for (var i = 0; i < 4; i++) {
+        var iln = new ThreeBSP(islandgeo);
+        var sectorbox = new THREE.BoxGeometry( islandR*1.5, islandR*1.5, islandR );
+        sectorbox.translate(boxposes[i].x, boxposes[i].y, boxposes[i].z);
+        var box = new ThreeBSP(sectorbox);
+
+        var seasoniln = iln.intersect(box).toGeometry();
+        
+        var island = new THREE.Mesh( seasoniln, mats[i] );
+        island.rotation.x = Math.PI/2; 
+        island.receiveShadow = true; 
+        scene.add(island);
+    }
 }
 
 function addBoat() { 
