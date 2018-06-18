@@ -304,7 +304,7 @@ THREE.Fall.prototype.addlight = function() {
     pl.position.set(0, 100, 0);
     pl.position.add(this.group.position);
     var hlper = new THREE.PointLightHelper(pl);
-    this.scene.add(hlper);
+    //this.scene.add(hlper);
     
     
     var plstrength = 0.9;
@@ -315,7 +315,7 @@ THREE.Fall.prototype.addlight = function() {
     pl.position.set(28, 10 , 11);
     pl.position.add(this.group.position);
     var hlper = new THREE.PointLightHelper(pl);
-    this.scene.add(hlper);
+    //this.scene.add(hlper);
 
 }
 

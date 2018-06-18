@@ -405,7 +405,7 @@ function addObjs() {
     addSky();
     addPath();
     addBoat();
-    addFlag();
+
     
     addSpringObjs();
     addSummerObjs(); 
