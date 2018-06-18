@@ -3,12 +3,54 @@
 	<head>
 		<meta charset=utf-8>
 		<title>Seasons Island</title>
-		<style>
-			body { margin: 0; }
-			canvas { width: 100%; height: 100% }
-		</style>
+    <style type="text/css">
+        html, body {
+            margin: 0;
+            height: 100%;
+        }
+
+        canvas {
+            display: block;
+        }
+        #blocker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        #instructions {
+            width: 100%;
+            height: 100%;
+            display: -webkit-box;
+            display: -moz-box;
+            display: box;
+            -webkit-box-orient: horizontal;
+            -moz-box-orient: horizontal;
+            box-orient: horizontal;
+            -webkit-box-pack: center;
+            -moz-box-pack: center;
+            box-pack: center;
+            -webkit-box-align: center;
+            -moz-box-align: center;
+            box-align: center;
+            color: #ffffff;
+            text-align: center;
+            cursor: pointer;
+        }
+
+    </style>
 	</head>
 	<body>
+        <div id="blocker">
+            <div id="instructions">
+                <span style="font-size:40px">点击屏幕开始</span>
+                <br />
+                <br />
+                (W, A, S, D = 移动, SPACE = 跳跃, MOUSE = 移动视角)
+            </div>
+        </div>
+
+
         <script id="vertexShader" type="x-shader/x-vertex">
             varying vec2 vUv;
             varying vec4 worldPos;
@@ -100,7 +142,7 @@
 		<script src="js/three.js"></script>
 		<script src="js/ImprovedNoise.js"></script>
 		<script src="js/ThreeCSG.js"></script>
-		<script src="js/libs/stats.min.js"></script>
+        <script src="js/libs/stats.min.js"></script>
         
 		<script src="js/libs/ammo.js"></script>
         
@@ -115,20 +157,20 @@
 		<script src="js/shaders/FXAAShader.js"></script>
 		<script src="js/shaders/ConvolutionShader.js"></script>
 <!--		<script src="js/shaders/RGBShiftShader.js"></script>-->
-        		<script src="js/shaders/LuminosityHighPassShader.js"></script>
+        <script src="js/shaders/LuminosityHighPassShader.js"></script>
 		<script src="js/postprocessing/UnrealBloomPass.js"></script>
-        
-       <script src="js/controls/FirstPersonControls.js"></script>
-       <script src="js/controls/OrbitControls.js"></script>
-    <script src="js/loaders/OBJLoader.js"></script>
-    <script src="js/loaders/MTLLoader.js"></script>
-         <script src="spring.js"> </script>   
-         <script src="sea.js"> </script>   
+        <script src="js/controls/PointerLockControls.js"></script>
+        <script src="js/controls/FirstPersonControls.js"></script>
+        <script src="js/controls/OrbitControls.js"></script>
+        <script src="js/loaders/OBJLoader.js"></script>
+        <script src="js/loaders/MTLLoader.js"></script>
+        <script src="spring.js"> </script>   
+        <script src="sea.js"> </script>   
         <script src="https://threejs.org/examples/js/renderers/CanvasRenderer.js"></script>
 		<script src="winter.js" > </script>
         <script src="Fall.js" > </script>
         <script src="summer.js"></script>
-		<script src="myscene.js">		
-		</script>    
+		<script src="myscene1.js"></script>  
+        
 	</body>
 </html> 
