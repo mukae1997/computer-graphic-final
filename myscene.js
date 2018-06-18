@@ -27,11 +27,17 @@ var parameters = {
 var textureMatrix = new THREE.Matrix4();
 var rotationMatrix = new THREE.Matrix4();
 
-var physicsWorld = null, cloth = null;
+
 // Physics variables
+var physicsWorld = null, cloth = null;
+var rigidBodies = [];
 var gravityConstant = -9.8;
 var margin = 0.05;
+var cloth;
+var armMovement = 0;
+var transformAux1 = new Ammo.btTransform();
 
+var clock = new THREE.Clock();
 var composer;
 
 ///////////////////////////////////
@@ -56,25 +62,11 @@ function update(){
     var dt = new Date(); 
     if(boat) boat.position.y = 0.5+Math.sin(dt.getTime()*0.003 + Math.PI/2);
     
+
+    var deltaTime = clock.getDelta();
+
+    updatePhysics( deltaTime );
     
-    // Update cloth
-    if (cloth) {
-        var softBody = cloth.userData.physicsBody;
-        var clothPositions = cloth.geometry.attributes.position.array;
-        var numVerts = clothPositions.length / 3;
-        var nodes = softBody.get_m_nodes();
-        var indexFloat = 0;
-        for ( var i = 0; i < numVerts; i ++ ) {
-            var node = nodes.at( i );
-            var nodePos = node.get_m_x();
-            clothPositions[ indexFloat++ ] = nodePos.x();
-            clothPositions[ indexFloat++ ] = nodePos.y();
-            clothPositions[ indexFloat++ ] = nodePos.z();
-        }
-        cloth.geometry.computeVertexNormals();
-        cloth.geometry.attributes.position.needsUpdate = true;
-        cloth.geometry.attributes.normal.needsUpdate = true;
-    }
     
 
 }
@@ -98,12 +90,14 @@ function addObjs() {
    addSky();
    addPath();
    addBoat();
-   addFlag();
     
    addSpringObjs();
    addSummerObjs(); 
    addFallObjs(); 
    addWinterObjs();
+    
+   addFlag();
+    
 
 }
 /////////////////////////////////////////////////////
@@ -417,29 +411,33 @@ function setTestHelper()
     
  }
 function initPhysics() {
-				// Physics configuration
-				var collisionConfiguration = new Ammo.btSoftBodyRigidBodyCollisionConfiguration();
-				var dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration );
-				var broadphase = new Ammo.btDbvtBroadphase();
-				var solver = new Ammo.btSequentialImpulseConstraintSolver();
-				var softBodySolver = new Ammo.btDefaultSoftBodySolver();
-				physicsWorld = new Ammo.btSoftRigidDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration, softBodySolver);
-				physicsWorld.setGravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
-				physicsWorld.getWorldInfo().set_m_gravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
+    // Physics configuration
+    var collisionConfiguration = new Ammo.btSoftBodyRigidBodyCollisionConfiguration();
+    var dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration );
+    var broadphase = new Ammo.btDbvtBroadphase();
+    var solver = new Ammo.btSequentialImpulseConstraintSolver();
+    var softBodySolver = new Ammo.btDefaultSoftBodySolver();
+    physicsWorld = new Ammo.btSoftRigidDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration, softBodySolver);
+    physicsWorld.setGravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
+    physicsWorld.getWorldInfo().set_m_gravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
 }
 
 function addFlag() {
-    var cloth;
+    
+    var flagroup = new THREE.Group();
+    
 
+    
     // The cloth
     // Cloth graphic object
-    var clothWidth = 4;
-    var clothHeight = 3;
-    var clothNumSegmentsZ = clothWidth * 5;
-    var clothNumSegmentsY = clothHeight * 5;
+    var clothWidth = 6;
+    var clothHeight = 4;
+    var divs = 4;
+    var clothNumSegmentsZ = clothWidth * divs;
+    var clothNumSegmentsY = clothHeight * divs;
     var clothSegmentLengthZ = clothWidth / clothNumSegmentsZ;
     var clothSegmentLengthY = clothHeight / clothNumSegmentsY;
-    var clothPos = new THREE.Vector3( -3, 13, 2 );
+    var clothPos = new THREE.Vector3( -3, 15, clothWidth / 2 );
     //var clothGeometry = new THREE.BufferGeometry();
     var clothGeometry = new THREE.PlaneBufferGeometry( clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY );
     clothGeometry.rotateY( Math.PI * 0.5 );
@@ -449,11 +447,11 @@ function addFlag() {
     cloth = new THREE.Mesh( clothGeometry, clothMaterial );
     cloth.castShadow = true;
     cloth.receiveShadow = true;
-    scene.add( cloth );
-    new THREE.TextureLoader().load( "imgs/brick.jpg", function( texture ) {
+    flagroup.add( cloth );
+    new THREE.TextureLoader().load( "imgs/sysu.jpeg", function( texture ) {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set( clothNumSegmentsZ, clothNumSegmentsY );
+        texture.repeat.set( 1, 1 );
         cloth.material.map = texture;
         cloth.material.needsUpdate = true;
     } );
@@ -474,6 +472,157 @@ function addFlag() {
     cloth.userData.physicsBody = clothSoftBody;
     // Disable deactivation
     clothSoftBody.setActivationState( 4 );
+    
+    
+    // The base
+    var armMass = 2;
+    var armLength = 3 + clothWidth;
+    var pylonHeight = clothPos.y + clothHeight;
+	var quat = new THREE.Quaternion();
+    var pos = new THREE.Vector3(0,0,0);
+    
+    var baseMaterial2 = new THREE.MeshLambertMaterial( { 
+        color: 0xdddddd,
+        map: THREE.ImageUtils.loadTexture( "imgs/wood.jpeg" )
+    } );
+    var baseMaterial3 = new THREE.MeshPhongMaterial( { color: 0x0000dd } );
+    				
+
+    quat.set( 0, 0, 0, 1 );
+    
+    pos.set( clothPos.x, 0.5 * pylonHeight , clothPos.z - clothWidth);
+    var pylon = createParalellepiped( 0.1, pylonHeight, 0.1, 0, pos, quat, baseMaterial2, flagroup );
+    pylon.castShadow = true;
+    pylon.receiveShadow = true;
+//				pos.set( clothPos.x, pylonHeight + 0.2, clothPos.z - 0.5 * armLength );
+    pos.set( clothPos.x, pylonHeight + 0.2, clothPos.z + 0.2);
+    var volumeVec = new THREE.Vector3(0.4,0.4,armLength + 5);
+    var arm = createParalellepiped( volumeVec.x, volumeVec.y, volumeVec.z, armMass, pos, quat, baseMaterial3, flagroup );
+    arm.castShadow = true;
+    arm.receiveShadow = true;
+    arm.visible = false;
+
+    // Glue the cloth to the arm
+    var influence = 0.5; // the pull for
+//                appendAnchor(int node,btRigidBody* body, const btVector3& localPivot,bool                   disableCollisionBetweenLinkedBodies=false,btScalar in
+    
+    clothSoftBody.appendAnchor( 2, arm.userData.physicsBody, false, influence );
+//                
+    // --------------------------------------------
+
+
+
+    influence = 0.85; // the pull for
+
+    clothSoftBody.appendAnchor( clothNumSegmentsZ, pylon.userData.physicsBody, false, influence );
+    clothSoftBody.appendAnchor( (clothWidth*divs+1)*clothHeight*divs + clothNumSegmentsZ , pylon.userData.physicsBody, false, influence );
+
+// --------------------------------------------
+
+    // Hinge constraint to move the arm
+    var pivotA = new Ammo.btVector3( 0, pylonHeight * 0.5, 0 );
+    var pivotB = new Ammo.btVector3( 0, -0.2, - armLength * 0.5 );
+    var axis = new Ammo.btVector3( 0, 1, 0 );
+    hinge = new Ammo.btHingeConstraint( pylon.userData.physicsBody, arm.userData.physicsBody, pivotA, pivotB, axis, axis, true );
+    physicsWorld.addConstraint( hinge, true );
+
+    // --------------------------------------------
+
+
+                
+    scene.add(flagroup); 
+    
+    flagroup.position.set(-25,0,5);
+
+}
+
+function createParalellepiped( sx, sy, sz, mass, pos, quat, material, grp ) {
+
+    var threeObject = new THREE.Mesh( new THREE.BoxGeometry( sx, sy, sz, 1, 1, 1 ), material );
+    var shape = new Ammo.btBoxShape( new Ammo.btVector3( sx * 0.5, sy * 0.5, sz * 0.5 ) );
+    shape.setMargin( margin );
+
+    createRigidBody( threeObject, shape, mass, pos, quat, grp );
+
+    return threeObject;
+
+}
+
+function createRigidBody( threeObject, physicsShape, mass, pos, quat, grp ) {
+
+    threeObject.position.copy( pos );
+    threeObject.quaternion.copy( quat );
+
+    var transform = new Ammo.btTransform();
+    transform.setIdentity();
+    transform.setOrigin( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
+    transform.setRotation( new Ammo.btQuaternion( quat.x, quat.y, quat.z, quat.w ) );
+    var motionState = new Ammo.btDefaultMotionState( transform );
+
+    var localInertia = new Ammo.btVector3( 0, 0, 0 );
+    physicsShape.calculateLocalInertia( mass, localInertia );
+
+    var rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, physicsShape, localInertia );
+    var body = new Ammo.btRigidBody( rbInfo );
+
+    threeObject.userData.physicsBody = body;
+
+    grp.add( threeObject );
+
+    if ( mass > 0 ) {
+        rigidBodies.push( threeObject );
+
+        // Disable deactivation
+        body.setActivationState( 4 );
+    }
+
+    physicsWorld.addRigidBody( body );
+
+}
+
+function updatePhysics( deltaTime ) {
+
+    // Hinge control
+    armMovement = 2*Math.sin(0.7*clock.getElapsedTime());
+    if (hinge) hinge.enableAngularMotor( true, 0.8 * armMovement, 50 );
+
+    // Step world
+    physicsWorld.stepSimulation( deltaTime, 10 );
+
+    // Update cloth
+    var softBody = cloth.userData.physicsBody;
+    var clothPositions = cloth.geometry.attributes.position.array;
+    var numVerts = clothPositions.length / 3;
+    var nodes = softBody.get_m_nodes();
+    var indexFloat = 0;
+    for ( var i = 0; i < numVerts; i ++ ) {
+
+        var node = nodes.at( i );
+        var nodePos = node.get_m_x();
+        clothPositions[ indexFloat++ ] = nodePos.x();
+        clothPositions[ indexFloat++ ] = nodePos.y();
+        clothPositions[ indexFloat++ ] = nodePos.z();
+
+    }
+    cloth.geometry.computeVertexNormals();
+    cloth.geometry.attributes.position.needsUpdate = true;
+    cloth.geometry.attributes.normal.needsUpdate = true;
+
+    // Update rigid bodies
+    for ( var i = 0, il = rigidBodies.length; i < il; i++ ) {
+        var objThree = rigidBodies[ i ];
+        var objPhys = objThree.userData.physicsBody;
+        var ms = objPhys.getMotionState();
+        if ( ms ) {
+
+            ms.getWorldTransform( transformAux1 );
+            var p = transformAux1.getOrigin();
+            var q = transformAux1.getRotation();
+            objThree.position.set( p.x(), p.y(), p.z() );
+            objThree.quaternion.set( q.x(), q.y(), q.z(), q.w() );
+
+        }
+    }
 
 }
 
