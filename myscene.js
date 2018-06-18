@@ -364,14 +364,14 @@ function init() {
     camera.position.y = 25; 
     camera.position.z = 5;
     
-    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.31 );
+    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.1 );
     scene.add(heml);
     
 //    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
 //    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
 	clock = new THREE.Clock();
     
-    var ambl = new THREE.AmbientLight( 0x404040, 0.3 ); // soft white light
+    var ambl = new THREE.AmbientLight( 0x404040, 0.1 ); // soft white light
     scene.add( ambl );
     
     // postprocessing
