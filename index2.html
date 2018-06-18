@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Seasons Island</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+        <script id="vertexShader" type="x-shader/x-vertex">
+            varying vec2 vUv;
+            varying vec4 worldPos;
+            varying vec3 vNormal;
+            uniform mat4 transform;
+			uniform mat4 textureMatrix; 
+            varying vec4 mirrorCoord;
+            
+            
+			void main() { 
+				 vUv = uv; 
+                 vNormal = normal;
+				 gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+                 
+                 worldPos = transform * modelMatrix * vec4(position.xyz, 1.0);
+                 mirrorCoord =  textureMatrix * modelMatrix * vec4(position, 1.0);
+                
+			}
+
+        </script>
+        
+        
+		<script id="fragmentShader" type="x-shader/x-vertex"> 
+        varying vec2 vUv;
+        uniform sampler2D mirrorSampler;
+        uniform sampler2D normalSampler;
+        
+        uniform sampler2D theTexture;
+        varying vec4 worldPos;
+        varying vec3 vNormal; 
+        uniform vec3 viewPos;
+        uniform vec3 ilightPos;
+
+        varying vec4 mirrorCoord;
+
+        void main()	{
+            // gl_FragCoord.x  屏幕坐标
+            // gl_FragColor = vec4(vUv.x, vUv.y,1,1);
+            
+            vec3 lightPos = vec3(650.0,38.0,950.0); // fake light
+            lightPos = ilightPos;
+            
+
+            float ambientStrength = 0.2;
+            vec3 lightColor = vec3(0.6,0.8,0.86);
+            vec3 ambient = ambientStrength * lightColor; 
+            
+            // diffuse lighting
+            
+            vec3 norm = normalize(vNormal);
+            
+            norm =   (texture2D(theTexture, vUv).xyz );
+            vec3 lightDir = normalize(lightPos - vec3(worldPos));
+            float diff = max(dot(norm, lightDir), 0.0);
+            vec3 diffuse = diff * lightColor;
+            
+            // specular lighting 
+            
+            float specularStrength = 1.3;
+            vec3 viewDir = normalize(viewPos - vec3(worldPos));
+            vec3 inlight = -lightDir;
+            vec3 reflectDir = reflect(inlight, norm);
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 16.0);
+            vec3 specular = specularStrength * spec * lightColor;   
+            vec4 texColor = texture2D(theTexture, vUv);
+            vec4 result = vec4(ambient*0.0 + diffuse + specular*1.0, 1.0) * texColor;
+
+
+            // fresnel
+            vec4 env = texture2DProj( mirrorSampler, mirrorCoord);
+            
+            float e = 0.66;
+            vec3 refractDir = refract(inlight, norm, e);
+            float power = 5.0;
+            float bias = 0.2;
+            float scale = 0.5;
+            float fresnel = bias + scale * pow(min(0.0, 1.0 - dot(inlight, norm)), 
+                                                power);
+            
+            //vec3 reflectColor = vec3(mirrorCoord.y, mirrorCoord.x, 1.0);
+            vec3 reflectColor = env.rgb;  
+            //vec3 reflectColor = vec3(0.5,1.0,1.0);  
+            
+            float latterRatio = fresnel;
+            gl_FragColor = vec4(mix(result.rgb, reflectColor, latterRatio) ,   fresnel * 0.5 + 0.1);
+            // gl_FragColor = result.rgba;
+        }
+        </script>
+		<script src="js/three.js"></script>
+		<script src="js/ImprovedNoise.js"></script>
+		<script src="js/ThreeCSG.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+        
+		<script src="js/libs/ammo.js"></script>
+        
+		<script src="js/postprocessing/EffectComposer.js"></script>
+		<script src="js/postprocessing/RenderPass.js"></script>
+		<script src="js/postprocessing/ShaderPass.js"></script>
+		<script src="js/postprocessing/MaskPass.js"></script>
+        
+		<script src="js/shaders/CopyShader.js"></script>
+		<script src="js/shaders/DotScreenShader.js"></script>
+        
+		<script src="js/shaders/FXAAShader.js"></script>
+		<script src="js/shaders/ConvolutionShader.js"></script>
+<!--		<script src="js/shaders/RGBShiftShader.js"></script>-->
+        		<script src="js/shaders/LuminosityHighPassShader.js"></script>
+		<script src="js/postprocessing/UnrealBloomPass.js"></script>
+        
+       <script src="js/controls/FirstPersonControls.js"></script>
+       <script src="js/controls/OrbitControls.js"></script>
+    <script src="js/loaders/OBJLoader.js"></script>
+    <script src="js/loaders/MTLLoader.js"></script>
+         <script src="spring.js"> </script>   
+         <script src="sea.js"> </script>   
+        <script src="https://threejs.org/examples/js/renderers/CanvasRenderer.js"></script>
+		<script src="winter.js" > </script>
+        <script src="Fall.js" > </script>
+        <script src="summer.js"></script>
+		<script src="myscene.js">		
+		</script>    
+	</body>
+</html> 

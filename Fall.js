@@ -15,6 +15,7 @@ THREE.Fall = function(){
     this.treeobj = null;
     this.cropobj = null;
     this.mushrommobj = null;
+
     this.trees = [];
     
 }
@@ -27,25 +28,34 @@ THREE.Fall.prototype.addObjs = function(scene){
     this.scene = scene;
     this.loadCropobj(() => {
         this.addCrop(10,0,30);
+        this.addCrop(11,0,26);
+        this.addCrop(12,0,28);
+        this.addCrop(13,0,28);
+        this.addCrop(10,1,28);
         this.addCrop(11,1,26);
+        this.addCrop(12,1,32);
+        this.addCrop(13,1,28);
+        this.addCrop(10,-1,28);
+        this.addCrop(11,-1,26);
+        this.addCrop(12,-1,32);
+        this.addCrop(13,-1,28);
+        this.addCrop(10,-2,28);
+        this.addCrop(11,-2,26);
+        this.addCrop(12,-2,32);
         this.addCrop(13,-2,28);
-        this.addCrop(8,-2,28);
-        this.addCrop(9,0,26);
-        this.addCrop(13,2,32);
         
         
     });
+    
+
+    
     this.loadTreeobj(()=>{
         this.addObjTree(0,0,0.3);
         this.addObjTree(0,-30, 0.17);
         this.addObjTree(20,-30, 0.2);
-        this.addObjTree(15,-15, 0.12);
         this.addObjTree(-13,-19, 0.23);
-        this.addObjTree(-25, 13, 0.1);
-        
-        this.addObjTree(-3, -11, 0.12);
-        this.addObjTree(-5, -13, 0.11);
-        this.addObjTree(8, -16, 0.13);
+        this.addObjTree(-25, 13, 0.19);
+        this.addObjTree(8, -16, 0.17);
          
     });
     
@@ -59,27 +69,32 @@ THREE.Fall.prototype.addObjs = function(scene){
     this.addGrass(8, -16, 2.5, 2);
     this.addGrass(0, -30, 2.5, 2);
     this.addGrass(14, 8, 2.5, 2);
+    this.addGrass(17, 0, 2.5, 2);
     this.addGrass(17, -30, 2.5, 2);
     this.addGrass(0, 0, 3, 3);
     this.addGrass(-12, 16, 3, 2);
     this.addGrass(-23, -23, 3, 2); 
-    this.addGrass(-25, 5, 3, 2); 
+    this.addGrass(-25, 13, 3, 2); 
+    this.addGrass(-24, 8, 2.5, 2); 
     this.addGrass(-20,23,2, 2);
-    
-    //this.addStones(0,0,2,8);
+    this.addGrass(5, 22, 1.2, 7);
+    this.addGrass(3, 20, 1.2, 7);
+
     this.addStones(6,-30,2,8);
     this.addStones(-25,5,2,8);
     this.addStones(-18,-19,0,8); 
     this.addStones(-22,-22,0,18);
+    this.addStones(-24,7,0,4);
     
     this.loadMushroomobj(()=>{
-        this.addMushroom(-25,0);
-        this.addMushroom(15,8);
-        this.addMushroom(0,-23);
+        this.addMushroom(-6,-24);
+        this.addMushroom(-5,-23);
+        this.addMushroom(-7,-23);
     });
+
     this.addleaves();
     
-			 
+             
 }
 
 /////////////////////////////////////////////////
@@ -117,22 +132,13 @@ THREE.Fall.prototype.loadTreeobj = function(callback) {
 
         materials.preload();
         
-        
         var mat = materials.materials;
         for (var key in mat) {
-            console.log(key)
+            console.log(key);
             mat[key].transparent = true;
             mat[key].alphatest = 0.5;
         }
-        
-//        console.log(materials)
 
-//        materials.alphaTest = 0.5;
-//        materials.depthTest = true;
-//        materials.blending = THREE.AdditiveBlending;
-////        materials.transparent = true;
-//        materials.side = THREE.DoubleSide;
-        
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
@@ -147,20 +153,23 @@ THREE.Fall.prototype.loadTreeobj = function(callback) {
 
     });
 }
+
+
+
 THREE.Fall.prototype.loadMushroomobj = function(callback) {
     
     var mtlLoader = new THREE.MTLLoader();
     var treept = 'obj/StylizedFoliage_OBJ/';   
     var self = this;
     mtlLoader.setPath( treept);
-    mtlLoader.load( 'Mushroom_02.mtl', function( materials ) {
+    mtlLoader.load( 'Mushroom_03.mtl', function( materials ) {
 
         materials.preload();   
 
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
-        objLoader.load( 'Mushroom_02.obj', function ( object ) {
+        objLoader.load( 'Mushroom_03.obj', function ( object ) {
             
             self.mushroomobj = object;
             callback();
@@ -180,6 +189,13 @@ THREE.Fall.prototype.loadCropobj = function(callback) {
     mtlLoader.load( 'VG02_4.mtl', function( materials ) {
 
         materials.preload();
+        
+        var mat = materials.materials;
+        for (var key in mat) {
+            console.log(key);
+            mat[key].transparent = true;
+            mat[key].alphatest = 0.5;
+        }
         
         var objLoader = new THREE.OBJLoader();
         objLoader.setMaterials( materials );
@@ -204,22 +220,21 @@ THREE.Fall.prototype.addleaves = function () {
     var textureLoader = new THREE.TextureLoader();
     var petalsprite = textureLoader.load( 'imgs/BL16lef3.png' ); 
     for ( i = 0; i < 40; i ++ ) {
-        var x = THREE.Math.randFloatSpread(30) - 2;
+        var x = THREE.Math.randFloatSpread(30) + 3;
         var y = Math.random() * 10 + 2;
-        var z = THREE.Math.randFloatSpread(30) - 2;
+        var z = THREE.Math.randFloatSpread(30) + 3;
         vertices.push( x, y, z );
     }
     geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
     
     var mat = new THREE.PointsMaterial( { 
 
-        size: 0.5,
+        size: 0.8,
         map: petalsprite, 
         depthTest: true, 
         transparent : true,
         side:THREE.DoubleSide,
         alphaTest: 0.5
-        //color:0xd23c28
     } );
     this.petals = new THREE.Points(geometry, mat);
     this.petalsgeo = geometry;
@@ -231,11 +246,11 @@ THREE.Fall.prototype.addleaves = function () {
     var vtx2 = [];
     for ( i = 0; i < 5000; i ++ ) {
         var theta = Math.random() * Math.PI * 2;
-        var r = THREE.Math.randFloat(6,40);
+        var r = THREE.Math.randFloat(6,34);
         var x = r * Math.cos(theta) ;
         var y = 1 - Math.random();
         var z = r * Math.sin(theta);
-        vtx2.push( x, y, z );
+        vtx2.push( x-3, y, z-3 );
     }
     staticgeo.addAttribute( 'position', new THREE.Float32BufferAttribute( vtx2, 3 ) );
     this.staticpetals = new THREE.Points(staticgeo, mat);
@@ -250,7 +265,7 @@ THREE.Fall.prototype.addMushroom = function(x=0,z=0,scale=-1,rot=Math.PI/8) {
     if (scale != -1) {
         object.scale.setScalar(scale);
     } else {
-        object.scale.setScalar(3);
+        object.scale.setScalar(2);
         
     }
     object.position.set(x, 1, z);
@@ -259,6 +274,7 @@ THREE.Fall.prototype.addMushroom = function(x=0,z=0,scale=-1,rot=Math.PI/8) {
     this.group.add( object );
     
 }
+
 
 THREE.Fall.prototype.addCrop = function(x=0,z=0,scale=-1,rot=0) {
     
@@ -271,16 +287,18 @@ THREE.Fall.prototype.addCrop = function(x=0,z=0,scale=-1,rot=0) {
         object.scale.setScalar(10);
         
     }
-    object.position.set(x, 0, z);
+    object.position.set(x, -1, z);
 
     object.rotation.y = rot;
     this.group.add( object );
+    
+    
 
 }
 
 THREE.Fall.prototype.addlight = function() {
     
-    var pl =  new THREE.DirectionalLight(0xFFF68F, 0.3);
+    var pl =  new THREE.DirectionalLight(0xFFF68F, 0.7);
     this.scene.add(pl); 
 
     pl.position.set(0, 100, 0);
@@ -288,6 +306,16 @@ THREE.Fall.prototype.addlight = function() {
     var hlper = new THREE.PointLightHelper(pl);
     this.scene.add(hlper);
     
+    
+    var plstrength = 0.9;
+    
+    var pl =  new THREE.PointLight(0xf8ffc9, plstrength, 35);
+//    pl.castShadow = true;
+    this.scene.add(pl); 
+    pl.position.set(28, 10 , 11);
+    pl.position.add(this.group.position);
+    var hlper = new THREE.PointLightHelper(pl);
+    this.scene.add(hlper);
 
 }
 
@@ -306,9 +334,7 @@ THREE.Fall.prototype.addObjTree = function(x = 0, z = 0, scaley = -1) {
         scaley = 1;
         object.scale.setScalar(scaley * THREE.Math.randFloat(0.5,0.9));
     }
-    self.group.add( object ); 
-//    this.trees.push(object);
-    
+    self.group.add( object );     
 }
 
 THREE.Fall.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
@@ -325,7 +351,6 @@ THREE.Fall.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
     }
     var grasspln = new THREE.PlaneGeometry(l,h);
     var grassmat = new THREE.MeshPhongMaterial( { 
-//        color: 0xffffff, 
         emissive:0xd23c28,
         emissiveIntensity:0.5,
         specular: 0xbbbbbb,
@@ -368,8 +393,7 @@ THREE.Fall.prototype.addStones = function(x=0,y=0, r=-1,cnt=25) {
     rockmap.wrapS = THREE.RepeatWrapping;
     rockmap.wrapT = THREE.RepeatWrapping; 
     rockmap.repeat.set(1,2);
-//    rockmap.offset.x = ( 300 / 100 ) * rockmap.repeat.x;
-//    rockmap.offset.y = ( 400 / 100 ) * rockmap.repeat.y;
+
     var stonemat = new THREE.MeshLambertMaterial( { 
         color: 0x727272,
         map:rockmap
