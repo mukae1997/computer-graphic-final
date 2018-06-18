@@ -271,11 +271,13 @@ THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1)
     self.group.add( object ); 
 //    this.trees.push(object);
     
-    var pl =  new THREE.PointLight(0xf8ffc9, 0.6, 35);
+    var plstrength = 0.9;
+    
+    var pl =  new THREE.PointLight(0xf8ffc9, plstrength, 35);
 //    pl.castShadow = true;
     this.scene.add(pl); 
     var h  =  THREE.Math.mapLinear(scaley,0.01 ,0.05,10,20) ;
-    pl.position.set(object.position.x, 5+h*20*scaley ,object.position.z);
+    pl.position.set(object.position.x, 3+h*20*scaley ,object.position.z);
     pl.position.add(this.group.position);
 //    if (pl.position.z < 0) pl.position.z += 3;
 //    if (pl.position.x < 0) pl.position.x += 3;

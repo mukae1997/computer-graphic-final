@@ -1,4 +1,4 @@
-var scene, camera, renderer, controls, clock;
+var scene, camera, renderer, controls, stats;
 var islandR = 70;
 var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0xdddddd } );
 var TWO_PI = Math.PI * 2;
@@ -80,16 +80,21 @@ function update(){
     controls.update(delta);
 //    renderer.render(scene, camera);
      composer.render();
+    stats.update();
+     
 }; 
 //////////////////////////////////////////////////
 
 function addObjs() {
+    addStats();
+    
    addIsland();
    addSea();
     addLensflare();
    addSky();
    addPath();
    addBoat();
+    
     
    addSpringObjs();
    addSummerObjs(); 
@@ -359,14 +364,14 @@ function init() {
     camera.position.y = 25; 
     camera.position.z = 5;
     
-    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
+    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.31 );
     scene.add(heml);
     
 //    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
 //    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
 	clock = new THREE.Clock();
     
-    var ambl = new THREE.AmbientLight( 0x404040, 0.5 ); // soft white light
+    var ambl = new THREE.AmbientLight( 0x404040, 0.3 ); // soft white light
     scene.add( ambl );
     
     // postprocessing
@@ -410,6 +415,18 @@ function setTestHelper()
    addFlower(0xc14d00, new THREE.Vector3(islandR/2,islandThick,islandR/2));
     
  }
+
+function addStats() {
+    stats = new Stats();
+    stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild( stats.dom );
+
+}
+
+
+
+// --------- physics --------------------
+
 function initPhysics() {
     // Physics configuration
     var collisionConfiguration = new Ammo.btSoftBodyRigidBodyCollisionConfiguration();
@@ -625,4 +642,6 @@ function updatePhysics( deltaTime ) {
     }
 
 }
+
+
 
