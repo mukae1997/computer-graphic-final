@@ -1,4 +1,4 @@
-var scene, camera, renderer, controls;
+var scene, camera, renderer, controls, stats;
 var islandR = 70;
 var defmat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0xdddddd } );
 var TWO_PI = Math.PI * 2;
@@ -130,10 +130,10 @@ function initcameraBox() {
     
 }
 function initLight() {
-    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.31 );
+    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.21 );
     scene.add(heml);
     
-    var ambl = new THREE.AmbientLight( 0x404040, 0.3 ); // soft white light
+    var ambl = new THREE.AmbientLight( 0x404040, 0.2 ); // soft white light
     scene.add( ambl );
 }
 
@@ -141,8 +141,8 @@ function initLight() {
 function addControls() {
     controls = new THREE.PointerLockControls( camera );
     controls.getObject().position.y = 10;
-    controls.getObject().position.x = 0;
-    controls.getObject().position.z = 0;
+    controls.getObject().position.x = -30;
+    controls.getObject().position.z = 5;
     scene.add( controls.getObject() );
     var onKeyDown = function ( event ) {
         switch ( event.keyCode ) {
@@ -198,7 +198,7 @@ function addControls() {
 function initPointerLock() {
     //实现鼠标锁定的教程地址 http://www.html5rocks.com/en/tutorials/pointerlock/intro/
     var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
-    console.log(havePointerLock);
+//    console.log(havePointerLock);
     if ( havePointerLock ) {
         var element = document.body;
         var pointerlockchange = function ( event ) {
@@ -255,6 +255,7 @@ function update(){
     var deltaTime = clock.getDelta();
 
     updatePhysics( deltaTime );    
+    stats.update();
 
 }
 
@@ -362,27 +363,27 @@ function render() {
             if ( moveLeft || moveRight ) velocity.x -= direction.x * speed * delta;
         }
         
-
-        // 复制相机的位置
-        downRaycaster.ray.origin.copy( control.position );
-        // 获取相机靠下10的位置
-        downRaycaster.ray.origin.y -= 10;
-        // 判断是否停留在了物体上面
-        var DownIntersections = [];
-        for (var i in scene.children) {
-            if (scene.children[i] instanceof THREE.Group) {
-                DownIntersections = downRaycaster.intersectObjects(scene.children[i].children, true);
-            } else if (scene.children[i] instanceof THREE.Mesh) {
-                DownIntersections.push(downRaycaster.intersectObject(scene.children[i]));
-            }
-        }
-        //var DownIntersections = downRaycaster.intersectObjects( scene.children, true);
-        var onObject = DownIntersections.length > 0;
-
-        if ( onObject === true ) {
-            velocity.y = Math.max( 0, velocity.y );
-            canJump = true;
-        }
+//
+//        // 复制相机的位置
+//        downRaycaster.ray.origin.copy( control.position );
+//        // 获取相机靠下10的位置
+//        downRaycaster.ray.origin.y -= 10;
+//        // 判断是否停留在了物体上面
+//        var DownIntersections = [];
+//        for (var i in scene.children) {
+//            if (scene.children[i] instanceof THREE.Group) {
+//                DownIntersections = downRaycaster.intersectObjects(scene.children[i].children, true);
+//            } else if (scene.children[i] instanceof THREE.Mesh) {
+//                DownIntersections.push(downRaycaster.intersectObject(scene.children[i]));
+//            }
+//        }
+//        //var DownIntersections = downRaycaster.intersectObjects( scene.children, true);
+//        var onObject = DownIntersections.length > 0;
+//
+//        if ( onObject === true ) {
+//            velocity.y = Math.max( 0, velocity.y );
+//            canJump = true;
+//        }
 
         //判断是否停在了立方体上面
         //根据速度值移动控制器
@@ -401,7 +402,7 @@ function addObjs() {
     
     addIsland();
     addSea();
-    addLensflare();
+//    addLensflare();
     addSky();
     addPath();
     addBoat();
@@ -463,7 +464,7 @@ function addSea() {
 }
 
 function addIsland() {
-    var islandShape = new THREE.Shape();
+var islandShape = new THREE.Shape();
 //    islandShape.moveTo(-r, 0s);s
     var cnt = 200;
     for (var i = 0 ; i < cnt; i++) {    
@@ -487,19 +488,72 @@ function addIsland() {
     brickmap.wrapT = THREE.RepeatWrapping; 
     brickmap.repeat.set(.1,.21);
     
-    var island = new THREE.Mesh( islandgeo, new THREE.MeshLambertMaterial(
-        {
-            color:0xccb69d,
-            emissive:0x222222,
-            map:brickmap,
-            opacity:0.5
-            
-        }
-    ) );
-    island.rotation.x = Math.PI/2; 
-    island.receiveShadow = true;
+    
+    // ------------------------------
+    let winterBump = THREE.ImageUtils.loadTexture( "imgs/snowground3.jpeg" )
+    winterBump.wrapS = THREE.RepeatWrapping;
+    winterBump.wrapT = THREE.RepeatWrapping;
+    winterBump.repeat.set( 0.01, 0.015 );
+    
+    var boxposes = [new THREE.Vector3(-islandR/2*1.5,-islandR/2*1.5,),
+                    new THREE.Vector3(islandR/2*1.5,-islandR/2*1.5,),
+                    new THREE.Vector3(islandR/2*1.5,islandR/2*1.5,),
+                    new THREE.Vector3(-islandR/2*1.5,islandR/2*1.5,)];
+    
+    var mats = [
+        // spring material
+            new THREE.MeshLambertMaterial(
+            {
+                color:0xffffff,
+//                emissive:0xaaff22,
+                map:brickmap,
+                opacity:0.5
 
-    scene.add(island);
+            }),
+        // summer material
+            new THREE.MeshLambertMaterial(
+            {
+                color:0xccb69d,
+//                emissive:0x00ff00,
+//                map:brickmap,
+                opacity:0.5
+
+            }),
+        // fall material
+                new THREE.MeshLambertMaterial(
+            {
+                color:0xccb69d,
+                //emissive:0xccb69d,
+                map:brickmap,
+                opacity:0.5
+
+            }),
+        // winter material
+                    new THREE.MeshBasicMaterial(
+            {
+                color:0xcfcfcf,
+                map: winterBump,// THREE.ImageUtils.loadTexture('imgs/snowground3.jpeg'),
+                // bumpMap: THREE.ImageUtils.loadTexture('imgs/snowGrounds0Normal.tiff'),
+                opacity:0.5,
+                bumpScale: 0.5
+            }) 
+
+        ];
+    
+    for (var i = 0; i < 4; i++) {
+        var iln = new ThreeBSP(islandgeo);
+        var sectorbox = new THREE.BoxGeometry( islandR*1.5, islandR*1.5, islandR );
+        sectorbox.translate(boxposes[i].x, boxposes[i].y, boxposes[i].z);
+        var box = new ThreeBSP(sectorbox);
+
+        var seasoniln = iln.intersect(box).toGeometry();
+        
+        var island = new THREE.Mesh( seasoniln, mats[i] );
+        island.rotation.x = Math.PI/2; 
+        island.receiveShadow = true; 
+        scene.add(island);
+    }
+    
 }
 
 function addBoat() { 
@@ -530,15 +584,31 @@ function addBoat() {
 }
 
 function addSky() {
-    var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
-    var skyMat = new THREE.MeshLambertMaterial( { 
-        color:0xaae1ff, 
-        side: THREE.BackSide,
-        emissive:0x3c80a8
-    } );
+    // var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
+    // var skyMat = new THREE.MeshLambertMaterial( { 
+    //     color:0xaae1ff, 
+    //     side: THREE.BackSide,
+    //     emissive:0x3c80a8
+    // } );
 
-    var sky = new THREE.Mesh( skyGeo, skyMat );
-    scene.add( sky );
+    // var sky = new THREE.Mesh( skyGeo, skyMat );
+    // scene.add( sky );
+    var path = "imgs/skybox/";//设置路径
+    var directions  = ["px", "nx", "py", "ny", "pz", "nz"];//获取对象
+    var format = ".png";//格式
+    //创建盒子，并设置盒子的大小为( 5000, 5000, 5000 )
+    var skyGeometry = new THREE.BoxGeometry( 700, 700, 700 );
+    //设置盒子材质
+    var materialArray = [];
+    for (var i = 0; i < 6; i++)
+        materialArray.push( new THREE.MeshBasicMaterial({
+            map: THREE.ImageUtils.loadTexture( path + directions[i] + format ),//将图片纹理贴上
+            side: THREE.BackSide/*镜像翻转，如果设置镜像翻转，那么只会看到黑漆漆的一片，因为你身处在盒子的内部，所以一定要设置镜像翻转。*/
+        }));
+    var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+    var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );//创建一个完整的天空盒，填入几何模型和材质的参数
+    scene.add( skyBox );//在场景中加入天空盒
+
 }
 
 /////////////////   season setting   ///////////////////

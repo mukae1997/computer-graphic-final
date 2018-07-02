@@ -30,7 +30,7 @@ var rotationMatrix = new THREE.Matrix4();
 
 
 // Physics variables
-var physicsWorld = null, cloth = null;
+var physicsWorld = null, cloth = null, hinge = null;
 var rigidBodies = [];
 var gravityConstant = -9.8;
 var margin = 0.05;
@@ -41,6 +41,9 @@ var transformAux1 = new Ammo.btTransform();
 var clock = new THREE.Clock();
 var composer;
 
+// lighting
+var ptnlight = null;
+var state = 0.0;
 ///////////////////////////////////
  
 init();
@@ -53,14 +56,25 @@ animate();
 
 //////////////////////////////////////////
 function update(){
-    sea.update(renderer, scene, camera);
-  if(sp)  sp.update();
-   if (winter) winter.update();
+    var dt = new Date(); 
+    
+    state = tick / Math.PI;
+    
+    sea.update(renderer, scene, camera, state);
+    var tick = dt.getTime()*0.00003 % Math.PI;
+    
+    ptnlight.position.y = 100 * Math.sin(tick);
+    ptnlight.position.x = 80 * Math.cos(tick);
+    ptnlight.color = new THREE.Color(0x001e6d).lerp(new THREE.Color(0xe85100), state);
+    ptnlight.intensity = 0.2 + 4.0 * state; 
+    
+    
+    if (sp)  sp.update();
+    if (winter) winter.update();
     if(fall) fall.update();
     // if (summer) summer.update();
     
     
-    var dt = new Date(); 
     if(boat) boat.position.y = 0.5+Math.sin(dt.getTime()*0.003 + Math.PI/2);
     
 
@@ -78,35 +92,74 @@ function update(){
     
     var delta = clock.getDelta();
     update();
+     
+     
     controls.update(delta);
-//    renderer.render(scene, camera);
-     composer.render();
+    renderer.render(scene, camera);
+//     composer.render();
     stats.update();
      
 }; 
 //////////////////////////////////////////////////
 
 function addObjs() {
-    addStats();
+   addStats();
     
+
    addIsland();
    addSea();
-    addLensflare();
+   addLensflare();
    addSky();
    addPath();
-   addBoat();
+//   addBoat();
     
     
    addSpringObjs();
-   addSummerObjs(); 
-   addFallObjs(); 
+//   addSummerObjs(); 
+//   addFallObjs(); 
    addWinterObjs();
-    
+//    
    addFlag();
+    
+   addLighting();
+    
     
 
 }
 /////////////////////////////////////////////////////
+function addLighting() {
+    
+    
+//    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
+//    scene.add(heml);
+//    
+    
+//    var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+//    directionalLight.castShadow = true;
+//    directionalLight.position.set(200,50,0);
+//    
+//    var tg = new THREE.Object3D();
+//    tg.position.y = 135;
+//    scene.add(tg);
+//    scene.add(directionalLight.target);
+//    
+//    directionalLight.target = tg;
+//    scene.add( directionalLight );
+//    
+//    var helper = new THREE.DirectionalLightHelper( directionalLight, 5 );
+//
+//    scene.add( helper );
+    
+    
+    ptnlight = new THREE.PointLight( 0x0048ff, 2.3, 0 );
+    ptnlight.position.set( 0, 50, 0 );
+    ptnlight.castShadow = true;
+    scene.add( ptnlight );
+    
+    var hl = new THREE.PointLightHelper(ptnlight);
+    scene.add(hl);
+}
+
 function addPath(){
     var l = 1;
     var brickgeo = new THREE.PlaneGeometry(l * 5, l);
@@ -178,6 +231,12 @@ function addIsland() {
     brickmap.repeat.set(.1,.21);
     
     
+    var snowmap = new THREE.ImageUtils.loadTexture( 'imgs/ground.jpg' );
+    snowmap.wrapS = THREE.RepeatWrapping;
+    snowmap.wrapT = THREE.RepeatWrapping; 
+    snowmap.repeat.set(.1,.21);
+    
+    
     // ------------------------------
     
     var boxposes = [new THREE.Vector3(-islandR/2*1.5,-islandR/2*1.5,),
@@ -199,7 +258,6 @@ function addIsland() {
             new THREE.MeshLambertMaterial(
             {
                 color:0xccb69d,
-                emissive:0x00ff00,
                 map:brickmap,
                 opacity:0.5
 
@@ -208,17 +266,16 @@ function addIsland() {
                 new THREE.MeshLambertMaterial(
             {
                 color:0xccb69d,
-                emissive:0xffff00,
                 map:brickmap,
                 opacity:0.5
 
             }),
         // winter material
-                    new THREE.MeshLambertMaterial(
+            new THREE.MeshLambertMaterial(
             {
-                color:0xccb69d,
-                emissive:0xffffff,
-                map:brickmap,
+                color:0xf4f8ff,
+//                emissive:0xffffff,
+                map:snowmap,
                 opacity:0.5
 
             })
@@ -297,7 +354,6 @@ function addSpringObjs(){
 
     scene.add(springGroup);
     
-    springGroup.castShadow = true;
     
 //    controls.target = new THREE.Vector3(0,0,0);
     controls.target = springGroup.position.clone();
@@ -325,6 +381,7 @@ function addFallObjs() {
 }
 function addWinterObjs(){
     winter = new THREE.Winter(-islandR/2,islandThick + .05,islandR/2);
+    winter.group.castShadow = true;
     scene.add(winter.group);
     winter.particle.update(() => {renderer.render(scene, camera);});
     
@@ -370,12 +427,20 @@ function addFlower(c, p) {
 
 
 function addLensflare() {
-    var textureFlare0 = THREE.ImageUtils.loadTexture( "imgs/rock.jpg" );
+    var textureFlare0 = new THREE.TextureLoader().load( "imgs/rock.jpg" );
 
-    var flareMaterial = new THREE.SpriteMaterial( { map: textureFlare0, useScreenCoordinates: false, color: 0xf8ce9c, fog: false, blending: THREE.AdditiveBlending } );
+    var flareMaterial = new THREE.SpriteMaterial( { 
+        map: textureFlare0, 
+//        useScreenCoordinates: false, 
+        color: 0xf8ce9c, 
+        fog: false 
+//        ,blending: THREE.AdditiveBlending 
+    } );
+    
+    console.log("> LENS_FLRE: ", flareMaterial == null);
     sun = new THREE.Sprite( flareMaterial );
     sun.scale.set( 2000, 2000, 1 );
-    sun.position.set(sea.lightpos);
+    sun.position.set(new THREE.Vector3(0,15,0));
     scene.add(sun);
 }
 
@@ -395,7 +460,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({
 			alpha: true
 		});
-    
+    renderer.setClearColor(0x000000);
     renderer.shadowMap.enabled = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
@@ -403,25 +468,26 @@ function init() {
     camera.position.y = 25; 
     camera.position.z = 5;
     
-    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.31 );
-    scene.add(heml);
-    
 //    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
 //    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
 	clock = new THREE.Clock();
     
-    var ambl = new THREE.AmbientLight( 0x404040, 0.3 ); // soft white light
-    scene.add( ambl );
+//    var ambl = new THREE.AmbientLight( 0x404040, 0.3 ); // soft white light
+//    scene.add( ambl );
     
     // postprocessing
     composer = new THREE.EffectComposer( renderer );
-    composer.addPass( new THREE.RenderPass( scene, camera ) );
+    var basePass = new THREE.RenderPass( scene, camera );
+//    basePass.renderToScreen = true;
+    composer.addPass( basePass );
     
     
 //    var effect = new THREE.ShaderPass( THREE.DotScreenShader );
 //    effect.uniforms[ 'scale' ].value = 4;
 //    
 //				effect.renderToScreen = true;
+    
+    
     var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.35, 0.35, 0.75 );
     //1.0, 9, 0.5, 512);
     bloomPass.renderToScreen = true;
@@ -493,13 +559,18 @@ function addFlag() {
     var clothNumSegmentsY = clothHeight * divs;
     var clothSegmentLengthZ = clothWidth / clothNumSegmentsZ;
     var clothSegmentLengthY = clothHeight / clothNumSegmentsY;
-    var clothPos = new THREE.Vector3( -3, 15, clothWidth / 2 );
+    var clothPos = new THREE.Vector3( -3, 14, clothWidth / 2 );
     //var clothGeometry = new THREE.BufferGeometry();
     var clothGeometry = new THREE.PlaneBufferGeometry( clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY );
     clothGeometry.rotateY( Math.PI * 0.5 );
     clothGeometry.translate( clothPos.x, clothPos.y + clothHeight * 0.5, clothPos.z - clothWidth * 0.5 );
     //var clothMaterial = new THREE.MeshLambertMaterial( { color: 0x0030A0, side: THREE.DoubleSide } );
-    var clothMaterial = new THREE.MeshLambertMaterial( { color: 0xFFFFFF, side: THREE.DoubleSide } );
+    var clothMaterial = new THREE.MeshLambertMaterial( { 
+        color: 0xFFFFFF, 
+        emissive:0x333333,
+        
+        side: THREE.DoubleSide 
+    } );
     cloth = new THREE.Mesh( clothGeometry, clothMaterial );
     cloth.castShadow = true;
     cloth.receiveShadow = true;
@@ -548,15 +619,15 @@ function addFlag() {
     
     pos.set( clothPos.x, 0.5 * pylonHeight , clothPos.z - clothWidth);
     var pylon = createParalellepiped( 0.1, pylonHeight, 0.1, 0, pos, quat, baseMaterial2, flagroup );
-    pylon.castShadow = true;
-    pylon.receiveShadow = true;
+//    pylon.castShadow = true;
+//    pylon.receiveShadow = true;
 //				pos.set( clothPos.x, pylonHeight + 0.2, clothPos.z - 0.5 * armLength );
     pos.set( clothPos.x, pylonHeight + 0.2, clothPos.z + 0.2);
     var volumeVec = new THREE.Vector3(0.4,0.4,armLength + 5);
     var arm = createParalellepiped( volumeVec.x, volumeVec.y, volumeVec.z, armMass, pos, quat, baseMaterial3, flagroup );
-    arm.castShadow = true;
-    arm.receiveShadow = true;
-    arm.visible = false;
+//    arm.castShadow = true;
+//    arm.receiveShadow = true;
+//    arm.visible = false;
 
     // Glue the cloth to the arm
     var influence = 0.5; // the pull for
@@ -589,6 +660,7 @@ function addFlag() {
     scene.add(flagroup); 
     
     flagroup.position.set(-25,0,0);
+    flagroup.castShadow = true;
 
 }
 

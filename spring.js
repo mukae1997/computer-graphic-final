@@ -27,9 +27,9 @@ THREE.Spring.prototype.addObjs = function(scene){
     this.scene = scene;
     this.loadFlowerobj(() => {
         this.addFlower(20,20, 0.2);
-        this.addFlower(25,22, 0.15, Math.PI*1.5);
-        this.addFlower(20,23, 0.17, Math.PI/8);
-        this.addFlower(23,23, 0.17, Math.PI/8);
+//        this.addFlower(25,22, 0.15, Math.PI*1.5);
+//        this.addFlower(20,23, 0.17, Math.PI/8);
+//        this.addFlower(23,23, 0.17, Math.PI/8);
         
     });
     this.loadTreeobj(()=>{
@@ -142,6 +142,18 @@ THREE.Spring.prototype.loadTreeobj = function(callback) {
         objLoader.load( 'plants1.obj', function ( object ) {
             
             self.treeobj = object;
+            
+            object.traverse( function ( child ) {
+
+             if ( child instanceof THREE.Mesh ) {
+
+                 
+                child.castShadow = true;
+
+            }
+
+            } );
+            
             callback();
 
  
@@ -187,9 +199,9 @@ THREE.Spring.prototype.addPetals = function () {
     var textureLoader = new THREE.TextureLoader();
     var petalsprite = textureLoader.load( 'imgs/petal.png' ); 
     for ( i = 0; i < 40; i ++ ) {
-        var x = THREE.Math.randFloatSpread(14) + 4;
+        var x = THREE.Math.randFloatSpread(14) -4 ;
         var y = Math.random() * 10 + 5;
-        var z = THREE.Math.randFloatSpread(14) + 4;
+        var z = THREE.Math.randFloatSpread(14) -4;
         vertices.push( x, y, z );
     }
     geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
@@ -215,9 +227,9 @@ THREE.Spring.prototype.addPetals = function () {
     var staticgeo = new THREE.BufferGeometry();
     var vtx2 = [];
     for ( i = 0; i < 30; i ++ ) {
-        var x = THREE.Math.randFloatSpread(18);
+        var x = THREE.Math.randFloatSpread(14)-6;
         var y = this.basin.position.y+this.basin.thick/2 + 0.1;
-        var z = THREE.Math.randFloatSpread(18);
+        var z = THREE.Math.randFloatSpread(14)-6;
         vtx2.push( x, y, z );
     }
     
@@ -268,10 +280,12 @@ THREE.Spring.prototype.addObjTree = function(x = 0, z = 0,roty = 1, scaley = -1)
         scaley = 0.03;
         object.scale.setScalar(scaley * THREE.Math.randFloat(0.5,0.9));
     }
-    self.group.add( object ); 
+
+    
+    this.group.add( object ); 
 //    this.trees.push(object);
     
-    var plstrength = 0.9;
+    var plstrength = 0.6;
     
     var pl =  new THREE.PointLight(0xf8ffc9, plstrength, 35);
 //    pl.castShadow = true;

@@ -53,8 +53,11 @@ THREE.Sea.prototype.init = function(camera) {
         },
         textureMatrix : {
             type: "m4", value: this.textureMatrix 
-        }
-        ,
+        },
+        iState:{
+            type:'f',
+            value: 0.0
+        },
         normalSampler: {
             type: 't',
             value: new THREE.TextureLoader().load( 'imgs/seanorm.jpg', function ( texture ) {
@@ -93,7 +96,7 @@ THREE.Sea.prototype.init = function(camera) {
     
 }
 
-THREE.Sea.prototype.update = function (render, scene, camera, mirrorTexture) {
+THREE.Sea.prototype.update = function (render, scene, camera, state) {
     
     
     
@@ -106,6 +109,10 @@ THREE.Sea.prototype.update = function (render, scene, camera, mirrorTexture) {
     
     this.uniforms.mirrorSampler.value = this.mirrorTexture.texture;
     this.uniforms.mirrorSampler.needsUpdate = true;
+    
+    this.uniforms.iState = state;
+    this.uniforms.iState.needsUpdate  = true;
+    
     
     
     this.sea.matrixNeedsUpdate = true;

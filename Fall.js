@@ -26,26 +26,26 @@ THREE.Fall.prototype.update = function(){
 
 THREE.Fall.prototype.addObjs = function(scene){
     this.scene = scene;
-    this.loadCropobj(() => {
-        this.addCrop(10,0,30);
-        this.addCrop(11,0,26);
-        this.addCrop(12,0,28);
-        this.addCrop(13,0,28);
-        this.addCrop(10,1,28);
-        this.addCrop(11,1,26);
-        this.addCrop(12,1,32);
-        this.addCrop(13,1,28);
-        this.addCrop(10,-1,28);
-        this.addCrop(11,-1,26);
-        this.addCrop(12,-1,32);
-        this.addCrop(13,-1,28);
-        this.addCrop(10,-2,28);
-        this.addCrop(11,-2,26);
-        this.addCrop(12,-2,32);
-        this.addCrop(13,-2,28);
-        
-        
-    });
+//    this.loadCropobj(() => {
+//        this.addCrop(10,0,30);
+//        this.addCrop(11,0,26);
+//        this.addCrop(12,0,28);
+//        this.addCrop(13,0,28);
+//        this.addCrop(10,1,28);
+//        this.addCrop(11,1,26);
+//        this.addCrop(12,1,32);
+//        this.addCrop(13,1,28);
+//        this.addCrop(10,-1,28);
+//        this.addCrop(11,-1,26);
+//        this.addCrop(12,-1,32);
+//        this.addCrop(13,-1,28);
+//        this.addCrop(10,-2,28);
+//        this.addCrop(11,-2,26);
+//        this.addCrop(12,-2,32);
+//        this.addCrop(13,-2,28);
+//        
+//        
+//    });
     
 
     
@@ -304,10 +304,10 @@ THREE.Fall.prototype.addlight = function() {
     pl.position.set(0, 100, 0);
     pl.position.add(this.group.position);
     var hlper = new THREE.PointLightHelper(pl);
-    //this.scene.add(hlper);
+    this.scene.add(hlper);
     
     
-    var plstrength = 0.9;
+    var plstrength = 0.6;
     
     var pl =  new THREE.PointLight(0xf8ffc9, plstrength, 35);
 //    pl.castShadow = true;
