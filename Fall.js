@@ -53,8 +53,12 @@ THREE.Fall.prototype.addObjs = function(scene){
         this.addObjTree(0,0,0.3);
         this.addObjTree(0,-30, 0.17);
         this.addObjTree(20,-30, 0.2);
+        this.addObjTree(15,-15, 0.22);
         this.addObjTree(-13,-19, 0.23);
         this.addObjTree(-25, 13, 0.19);
+        this.addObjTree(-24, 8, 0.23);
+        this.addObjTree(-3, -11, 0.18);
+        
         this.addObjTree(8, -16, 0.17);
          
     });
@@ -291,14 +295,12 @@ THREE.Fall.prototype.addCrop = function(x=0,z=0,scale=-1,rot=0) {
 
     object.rotation.y = rot;
     this.group.add( object );
-    
-    
 
 }
 
 THREE.Fall.prototype.addlight = function() {
     
-    var pl =  new THREE.DirectionalLight(0xFFF68F, 0.7);
+    var pl =  new THREE.DirectionalLight(0xFFF68F, 0.3);
     this.scene.add(pl); 
 
     pl.position.set(0, 100, 0);

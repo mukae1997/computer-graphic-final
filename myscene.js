@@ -57,11 +57,11 @@ animate();
 //////////////////////////////////////////
 function update(){
     var dt = new Date(); 
+    var tick = dt.getTime()*0.0003 % Math.PI;
     
     state = tick / Math.PI;
     
     sea.update(renderer, scene, camera, state);
-    var tick = dt.getTime()*0.00003 % Math.PI;
     
     ptnlight.position.y = 100 * Math.sin(tick);
     ptnlight.position.x = 80 * Math.cos(tick);
@@ -130,8 +130,8 @@ function addObjs() {
 function addLighting() {
     
     
-//    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
-//    scene.add(heml);
+    var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
+    scene.add(heml);
 //    
     
 //    var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
@@ -627,7 +627,7 @@ function addFlag() {
     var arm = createParalellepiped( volumeVec.x, volumeVec.y, volumeVec.z, armMass, pos, quat, baseMaterial3, flagroup );
 //    arm.castShadow = true;
 //    arm.receiveShadow = true;
-//    arm.visible = false;
+    arm.visible = false;
 
     // Glue the cloth to the arm
     var influence = 0.5; // the pull for
