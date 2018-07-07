@@ -26,7 +26,7 @@ THREE.Fall.prototype.update = function(){
 
 THREE.Fall.prototype.addObjs = function(scene){
     this.scene = scene;
-//    this.loadCropobj(() => {
+    this.loadCropobj(() => {
 //        this.addCrop(10,0,30);
 //        this.addCrop(11,0,26);
 //        this.addCrop(12,0,28);
@@ -36,34 +36,30 @@ THREE.Fall.prototype.addObjs = function(scene){
 //        this.addCrop(12,1,32);
 //        this.addCrop(13,1,28);
 //        this.addCrop(10,-1,28);
-//        this.addCrop(11,-1,26);
-//        this.addCrop(12,-1,32);
-//        this.addCrop(13,-1,28);
-//        this.addCrop(10,-2,28);
-//        this.addCrop(11,-2,26);
-//        this.addCrop(12,-2,32);
-//        this.addCrop(13,-2,28);
+        this.addCrop(11,-1,26);
+        this.addCrop(12,-1,32);
+        this.addCrop(13,-1,28);
+        this.addCrop(10,-2,28);
+        this.addCrop(11,-2,26);
+        this.addCrop(12,-2,32);
+        this.addCrop(13,-2,28);
 //        
-//        
-//    });
+        
+    });
     
-
+   this.addlight();
     
     this.loadTreeobj(()=>{
         this.addObjTree(0,0,0.3);
         this.addObjTree(0,-30, 0.17);
         this.addObjTree(20,-30, 0.2);
-        this.addObjTree(15,-15, 0.22);
         this.addObjTree(-13,-19, 0.23);
         this.addObjTree(-25, 13, 0.19);
-        this.addObjTree(-24, 8, 0.23);
-        this.addObjTree(-3, -11, 0.18);
-        
         this.addObjTree(8, -16, 0.17);
          
     });
     
-    this.addlight();
+    
     this.addGrass(0, 0, 3, 3);
     this.addGrass(0, -30, 2.5, 2);
     this.addGrass(20, -30, 3, 2);
@@ -147,9 +143,15 @@ THREE.Fall.prototype.loadTreeobj = function(callback) {
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
         objLoader.load( 'BL16a.obj', function ( object ) {
+            self.treeobj = object;
+            object.traverse( function(child) {
+                if(child instanceof THREE.Mesh) {
+                    child.castShadow = true;
+                }
+            });
             object.scale.setScalar(1);
             object.rotation.x = -Math.PI/2;
-            self.treeobj = object;
+
             callback();
 
  
@@ -174,8 +176,13 @@ THREE.Fall.prototype.loadMushroomobj = function(callback) {
         objLoader.setMaterials( materials );
         objLoader.setPath( treept );
         objLoader.load( 'Mushroom_03.obj', function ( object ) {
-            
             self.mushroomobj = object;
+            object.traverse( function(child) {
+                if(child instanceof THREE.Mesh) {
+                    child.castShadow = true;
+                }
+            });
+            
             callback();
 
  
@@ -208,6 +215,11 @@ THREE.Fall.prototype.loadCropobj = function(callback) {
             
             console.log(object)
             self.cropobj = object;
+            object.traverse( function(child) {
+                if(child instanceof THREE.Mesh) {
+                    child.castShadow = true;
+                }
+            });
             callback();
 
  
@@ -295,28 +307,30 @@ THREE.Fall.prototype.addCrop = function(x=0,z=0,scale=-1,rot=0) {
 
     object.rotation.y = rot;
     this.group.add( object );
+    
+    
 
 }
 
 THREE.Fall.prototype.addlight = function() {
     
-    var pl =  new THREE.DirectionalLight(0xFFF68F, 0.3);
-    this.scene.add(pl); 
+    //var pl =  new THREE.DirectionalLight(0xFFF68F, 0.7);
+    //this.scene.add(pl); 
 
-    pl.position.set(0, 100, 0);
-    pl.position.add(this.group.position);
-    var hlper = new THREE.PointLightHelper(pl);
-    this.scene.add(hlper);
+    //pl.position.set(0, 100, 0);
+    //pl.position.add(this.group.position);
+    //var hlper = new THREE.PointLightHelper(pl);
+    //this.scene.add(hlper);
     
     
-    var plstrength = 0.6;
+    var plstrength = 1;
     
-    var pl =  new THREE.PointLight(0xf8ffc9, plstrength, 35);
-//    pl.castShadow = true;
+    var pl =  new THREE.PointLight(0xf8ffc9, plstrength, 50);
+    pl.castShadow = false;
     this.scene.add(pl); 
-    pl.position.set(28, 10 , 11);
+    pl.position.set(10, 4 , -2);
     pl.position.add(this.group.position);
-    var hlper = new THREE.PointLightHelper(pl);
+    //var hlper = new THREE.PointLightHelper(pl);
     //this.scene.add(hlper);
 
 }
