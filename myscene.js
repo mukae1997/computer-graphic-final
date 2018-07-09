@@ -121,7 +121,7 @@ function addObjs() {
     addFlag();
     
     addLighting();
-    
+    addText();
     
 
 }
@@ -344,7 +344,7 @@ function addSky() {
     var path = "imgs/skybox/";//设置路径
     var directions  = ["px", "nx", "py", "ny", "pz", "nz"];//获取对象
     var format = ".png";//格式
-    //创建盒子，并设置盒子的大小为( 5000, 5000, 5000 )
+    //创建盒子，并设置盒子的大小为( 700, 700, 700 )
     var skyGeometry = new THREE.BoxGeometry( 700, 700, 700 );
     //设置盒子材质
     var materialArray = [];
@@ -401,6 +401,36 @@ function addWinterObjs(){
     
 }
 
+////////////////   add text        //////////////////
+function addText() {
+    var fontLoader = new THREE.FontLoader();
+    fontLoader.load('js/fonts/helvetiker_regular.typeface.json', function(font) {
+        var xMid, text;
+        var textShape = new THREE.BufferGeometry();
+        var color = 0x006699;
+        var matDark = new THREE.LineBasicMaterial({
+            color: color,
+            side: THREE.DoubleSide
+        });
+        var matLite = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.4,
+            side: THREE.DoubleSide
+        });
+        var message = "Welcome to\n Seasons Island!";
+        var shapes = font.generateShapes(message, 50);
+        var geometry = new THREE.ShapeGeometry(shapes);
+        geometry.computeBoundingBox();
+        xMid = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+        geometry.translate(xMid, 0, 0);
+        textShape.fromGeometry(geometry);
+        text = new THREE.Mesh(textShape, matLite);
+        text.position.z = -150;
+        text.position.y = 150;
+        scene.add(text);
+    })
+}
 /////////////////////////////////////////////////////
 THREE.addFlower = addFlower;
 function addFlower(c, p) { 
@@ -471,10 +501,14 @@ function init() {
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
     renderer = new THREE.WebGLRenderer({
+            antialias:true,
 			alpha: true
 		});
     renderer.setClearColor(0x000000);
     renderer.shadowMap.enabled = true;
+    // renderer.shadowMap.type = THREE.BasicShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    // renderer.shadowMap.type = THREE.THREE.PCFSoftShadowMap;
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
