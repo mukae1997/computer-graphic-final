@@ -1,6 +1,6 @@
 # Blender v2.77 (sub 0) OBJ File: 'vanra hotova.blend'
 # www.blender.org
-mtllib vanra hotova.mtl
+mtllib bonfire.mtl
 o Plane
 v 2.053715 0.081034 -0.022892
 v -0.682009 0.920702 0.097799

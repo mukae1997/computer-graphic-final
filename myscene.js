@@ -71,8 +71,8 @@ function update(){
     
     if (sp)  sp.update();
     if (winter) winter.update();
-    if(fall) fall.update();
-    // if (summer) summer.update();
+    if (fall) fall.update();
+    if (summer) summer.update();
     
     
     if(boat) boat.position.y = 0.5+Math.sin(dt.getTime()*0.003 + Math.PI/2);
@@ -91,9 +91,8 @@ function update(){
 
     
     var delta = clock.getDelta();
-    update();
-     
-     
+    update();     
+
     controls.update(delta);
     renderer.render(scene, camera);
 //     composer.render();
@@ -103,25 +102,25 @@ function update(){
 //////////////////////////////////////////////////
 
 function addObjs() {
-   addStats();
+    addStats();
     
 
-   addIsland();
-   addSea();
-   addLensflare();
-   addSky();
-   addPath();
+    addIsland();
+    addSea();
+    addLensflare();
+    addSky();
+    addPath();
 //   addBoat();
     
     
-   addSpringObjs();
-//   addSummerObjs(); 
-//   addFallObjs(); 
-   addWinterObjs();
-//    
-   addFlag();
+    addSpringObjs();
+    addSummerObjs(); 
+    addFallObjs(); 
+    addWinterObjs();
+
+    addFlag();
     
-   addLighting();
+    addLighting();
     
     
 
@@ -333,15 +332,30 @@ function addBoat() {
 }
 
 function addSky() {
-    var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
-    var skyMat = new THREE.MeshLambertMaterial( { 
-        color:0xaae1ff, 
-        side: THREE.BackSide,
-        emissive:0x3c80a8
-    } );
+    // var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
+    // var skyMat = new THREE.MeshLambertMaterial( { 
+    //     color:0xaae1ff, 
+    //     side: THREE.BackSide,
+    //     emissive:0x3c80a8
+    // } );
 
-    var sky = new THREE.Mesh( skyGeo, skyMat );
-    scene.add( sky );
+    // var sky = new THREE.Mesh( skyGeo, skyMat );
+    // scene.add( sky );
+    var path = "imgs/skybox/";//设置路径
+    var directions  = ["px", "nx", "py", "ny", "pz", "nz"];//获取对象
+    var format = ".png";//格式
+    //创建盒子，并设置盒子的大小为( 5000, 5000, 5000 )
+    var skyGeometry = new THREE.BoxGeometry( 700, 700, 700 );
+    //设置盒子材质
+    var materialArray = [];
+    for (var i = 0; i < 6; i++)
+        materialArray.push( new THREE.MeshBasicMaterial({
+            map: THREE.ImageUtils.loadTexture( path + directions[i] + format ),//将图片纹理贴上
+            side: THREE.BackSide/*镜像翻转，如果设置镜像翻转，那么只会看到黑漆漆的一片，因为你身处在盒子的内部，所以一定要设置镜像翻转。*/
+        }));
+    var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+    var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );//创建一个完整的天空盒，填入几何模型和材质的参数
+    scene.add( skyBox );//在场景中加入天空盒
 }
 
 /////////////////   season setting   ///////////////////
@@ -362,10 +376,9 @@ function addSummerObjs() {
     summer = new THREE.Summer(); 
     var summerGroup = summer.group; 
     summerGroup.position.set(islandR/2, islandThick + .05, -islandR/2);
-
+    // summerGroup.castShadow = true;
     summer.addObjs(scene);
     scene.add(summerGroup);
-    
 }
 function addFallObjs() {
     fall = new THREE.Fall(); 
