@@ -47,26 +47,28 @@ THREE.Summer.prototype.addObjs = function(scene) {
         this.addlittlepalm(-2, 8, Math.PI/6, 1.8);
         this.addlittlepalm(-8, 1, -Math.PI/8, 2.4);
         this.addlittlepalm(-5, -10, Math.PI/4, 2);
-        this.addlittlepalm(-5, 20, 1, 2);
+        this.addlittlepalm(-5, -5, 1, 2);
         this.addlittlepalm(-7, 9, -Math.PI/2, 2);
         // this.addlittlepalm(-17, -9, Math.PI, 2);
     });
     this.loadcanepalm(() => {
-        this.addcanepalm(8, 35, -Math.PI/4, 0.7);
-        this.addcanepalm(18, 35, -Math.PI/4, 0.7);
-        this.addcanepalm(5, 35, -Math.PI/4, 0.7);
-        this.addcanepalm(13, 35, -Math.PI/4, 0.7);
-        this.addcanepalm(25, 35, -Math.PI/4, 0.7);
-        this.addcanepalm(8, 33, -Math.PI/4, 0.5);
-        this.addcanepalm(18, 33, -Math.PI/4, 0.5);
-        this.addcanepalm(5, 33, -Math.PI/4, 0.5);
-        this.addcanepalm(13, 33, -Math.PI/4, 0.5);
-        this.addcanepalm(25, 33, -Math.PI/4, 0.5);
+        this.addcanepalm(8, 32, -Math.PI/4, 0.7);
+        this.addcanepalm(18, 32, -Math.PI/4, 0.7);
+        this.addcanepalm(5, 32, -Math.PI/4, 0.7);
+        this.addcanepalm(13, 32, -Math.PI/4, 0.7);
+        this.addcanepalm(25, 32, -Math.PI/4, 0.7);
+        this.addcanepalm(8, 32, -Math.PI/4, 0.5);
+        this.addcanepalm(18, 28, -Math.PI/4, 0.5);
+        this.addcanepalm(5, 28, -Math.PI/4, 0.5);
+        this.addcanepalm(13, 28, -Math.PI/4, 0.5);
+        this.addcanepalm(25, 28, -Math.PI/4, 0.5);
         this.addcanepalm(3, 15, -Math.PI/4, 0.46);
         this.addcanepalm(-4, 6, -Math.PI/4, 0.52);
         this.addcanepalm(-7, 3, -Math.PI/4, 0.6);
         this.addcanepalm(-4, -8, -Math.PI/4, 0.45);
         this.addcanepalm(-5, 12, -Math.PI/4, 0.53);
+        this.addcanepalm(-5, 8, -Math.PI/4, 0.5);
+        this.addcanepalm(-5, -5, -Math.PI/4, 0.5);
     });
     this.loadChair(() => {
         this.addChair(8,18, 0.06);
@@ -89,16 +91,19 @@ THREE.Summer.prototype.addObjs = function(scene) {
         this.addstair(-19.8, 18, 7.7);
     });
     this.loadShell(() => {
-        this.addshell(5, 10, 0.25);
-        this.addshell(-5, 4, 0.3);
-        this.addshell(15, -5, 0.32);
-        this.addshell(20, 8, 0.28);
+        this.addshell(5, -5, 0.25);
+        this.addshell(-5, 1, 0.3);
+        this.addshell(8, -3, 0.32);
+        this.addshell(10, 4, 0.28);
+        this.addshell(0, -12, 0.28);
+        this.addshell(-2, -14, 0.28);
+        this.addshell(10, -17, 0.28);
     });
     this.loadstarfish(() => {
         this.addstarfish(5, 8, 0.05);
-        this.addstarfish(-5, 6, 0.03);
-        this.addstarfish(15, -9, 0.032);
-        this.addstarfish(20, 3, 0.028);
+        this.addstarfish(5, 6, 0.03);
+        this.addstarfish(15, 2, 0.032);
+        this.addstarfish(9, 3, 0.038);
     });
 }
 
@@ -357,7 +362,7 @@ function Fire(x, y, z, size) {
     var material = new THREE.PointsMaterial({
         size:size,
         transparent: true,
-        // opacity: 0.5,
+        opacity: 0.8,
         vertexColors: true,
         color: 0xffffff,
         sizeAnnutation: true,
@@ -387,14 +392,17 @@ function Fire(x, y, z, size) {
 }
 var debug = true;
 Fire.prototype.update = function() {
-    var speed = 0.15;
+    var speed = 0.2;
+    var yspeed = 0.2;
     var max = 60;
+    var min = 58;
 
     var x = 5, y = 0.1, z = 0;
 
     for (var i = 0; i < this.particleCount; i++) {
         var particle = new THREE.Vector3(x, y, z);
         particle.life = 0;
+        particle.speed = speed;
         this.particles.vertices.push(particle);
         var color = new THREE.Color((260 - (particle.life * 2)) / 255, ((particle.life * 2) + 50) /255, (particle.life * 2)/255, ((max - particle.life) / max) * 0.4);
         this.particles.colors.push(color);
@@ -409,12 +417,13 @@ Fire.prototype.update = function() {
         var r = (1-a) * 241 + a * (260 - (particle.life * 2));
         var g = (1-a) * 200 + a * ((particle.life * 2) + 50);
         var b = (1-a) * 156 + a * particle.life * 2;
-        this.particles.colors[i].setRGB(r / 255, g /255, b /255);        
+        this.particles.colors[i].setRGB(r / 255, g /255, b /255);      
         // this.particles.colors[i].setRGB((260 - (particle.life * 2)) / 255, ((particle.life * 2) + 50) /255, (particle.life * 2)/255);
 
-        var xs = (Math.random() * 2 * speed - speed)/2;
-        var ys = (Math.random() * 2 * speed) / 2;
-        var zs = (Math.random() * 2 * speed - speed)/2;
+        var pspeed = particle.speed;
+        var xs = (Math.random() * 2 * pspeed - pspeed)/2;
+        var ys = (Math.random() * 2 * yspeed) / 2;
+        var zs = (Math.random() * 2 * pspeed - pspeed)/2;
         // if (i == 0 && debug) {
         //     console.log("before update xyz", particle);
         //     console.log("xs", xs);
@@ -424,11 +433,29 @@ Fire.prototype.update = function() {
         particle.y += ys;
         particle.z += zs;
         particle.life++;
+        if (pspeed < 0.35) {
+            particle.speed = pspeed + 0.003;
+        }
+
         // if (i == 0 && debug) {
 
         //     debug = false;
         //     console.log("the number of particles", this.particles.vertices.length);
         // }
+        if (particle.life < max && particle.life > min) {
+            var random = Math.random();
+            if (random > 0.5) {
+                this.particles.colors[i].setRGB(0.8705, 0.8715, 0.8798);
+                // console.log("x, z", particle.x, particle.z);
+            } else {
+                this.particles.colors[i].setRGB(0.6505, 0.6515, 0.6598);            
+            }
+        }
+        if ((particle.x > 5.5 && particle.z > 1.5) || (particle.x < 4.5 && particle.z > -0.5)|| (particle.x > 5.5 && particle.z > -0.5)|| (particle.x < 4.5 && particle.z < 1.5)) {
+            if (Math.random() > 0.9) {
+                this.particles.colors[i].setRGB(0.6505, 0.6515, 0.6598);                
+            }
+        }
         if (particle.life >= max) {
             this.particles.vertices.splice(i, 1);
             i--;
@@ -653,7 +680,7 @@ THREE.Summer.prototype.addstarfish = function(x = 0, z = 0, scaley = -1) {
     if(!this.starfish) return;
     var object = this.starfish.clone();
     var self = this;
-    object.position.set(x, 0.5, z);
+    object.position.set(x, 1, z);
 
     if (scaley != -1) {
         object.scale.setScalar(scaley);
