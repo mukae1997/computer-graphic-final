@@ -362,7 +362,7 @@ function Fire(x, y, z, size) {
     var material = new THREE.PointsMaterial({
         size:size,
         transparent: true,
-        opacity: 0.8,
+        // opacity: 0.8,
         vertexColors: true,
         color: 0xffffff,
         sizeAnnutation: true,
@@ -376,7 +376,7 @@ function Fire(x, y, z, size) {
 
         var particle = new THREE.Vector3(x, y, z);
 
-        particle.life = 0; 
+        particle.life = max; 
 
         this.particles.vertices.push(particle);
         // var a = ((max - particle.life) / max) * 0.4;
@@ -395,13 +395,13 @@ Fire.prototype.update = function() {
     var speed = 0.2;
     var yspeed = 0.2;
     var max = 60;
-    var min = 58;
+    var min = 2;
 
     var x = 5, y = 0.1, z = 0;
 
     for (var i = 0; i < this.particleCount; i++) {
         var particle = new THREE.Vector3(x, y, z);
-        particle.life = 0;
+        particle.life = max;
         particle.speed = speed;
         this.particles.vertices.push(particle);
         var color = new THREE.Color((260 - (particle.life * 2)) / 255, ((particle.life * 2) + 50) /255, (particle.life * 2)/255, ((max - particle.life) / max) * 0.4);
@@ -432,7 +432,7 @@ Fire.prototype.update = function() {
         particle.x += xs;
         particle.y += ys;
         particle.z += zs;
-        particle.life++;
+        particle.life--;
         if (pspeed < 0.35) {
             particle.speed = pspeed + 0.003;
         }
@@ -442,7 +442,7 @@ Fire.prototype.update = function() {
         //     debug = false;
         //     console.log("the number of particles", this.particles.vertices.length);
         // }
-        if (particle.life < max && particle.life > min) {
+        if (particle.life > 0 && particle.life < min) {
             var random = Math.random();
             if (random > 0.5) {
                 this.particles.colors[i].setRGB(0.8705, 0.8715, 0.8798);
@@ -456,7 +456,7 @@ Fire.prototype.update = function() {
                 this.particles.colors[i].setRGB(0.6505, 0.6515, 0.6598);                
             }
         }
-        if (particle.life >= max) {
+        if (particle.life < 0) {
             this.particles.vertices.splice(i, 1);
             i--;
         }
