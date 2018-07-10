@@ -27,6 +27,8 @@ THREE.Fall.prototype.update = function(){
 THREE.Fall.prototype.addObjs = function(scene){
     this.scene = scene;
     this.loadCropobj(() => {
+        THREE.TotalModelNumber++;
+        
 //        this.addCrop(10,0,30);
 //        this.addCrop(11,0,26);
 //        this.addCrop(12,0,28);
@@ -50,6 +52,8 @@ THREE.Fall.prototype.addObjs = function(scene){
    this.addlight();
     
     this.loadTreeobj(()=>{
+        THREE.TotalModelNumber++;
+        
         this.addObjTree(0,0,0.3);
         this.addObjTree(0,-30, 0.17);
         this.addObjTree(20,-30, 0.2);
@@ -60,25 +64,25 @@ THREE.Fall.prototype.addObjs = function(scene){
     });
     
     
-    this.addGrass(0, 0, 3, 3);
+//    this.addGrass(0, 0, 3, 3);
     this.addGrass(0, -30, 2.5, 2);
     this.addGrass(20, -30, 3, 2);
     this.addGrass(15, -15, 2, 2);
-    this.addGrass(-3, -11, 2.5, 2);
+//    this.addGrass(-3, -11, 2.5, 2);
     this.addGrass(-5, -13, 2.5, 2);
     this.addGrass(8, -16, 2.5, 2);
     this.addGrass(0, -30, 2.5, 2);
     this.addGrass(14, 8, 2.5, 2);
     this.addGrass(17, 0, 2.5, 2);
     this.addGrass(17, -30, 2.5, 2);
-    this.addGrass(0, 0, 3, 3);
+//    this.addGrass(0, 0, 3, 3);
     this.addGrass(-12, 16, 3, 2);
     this.addGrass(-23, -23, 3, 2); 
     this.addGrass(-25, 13, 3, 2); 
     this.addGrass(-24, 8, 2.5, 2); 
     this.addGrass(-20,23,2, 2);
     this.addGrass(5, 22, 1.2, 7);
-    this.addGrass(3, 20, 1.2, 7);
+//    this.addGrass(3, 20, 1.2, 7);
 
     this.addStones(6,-30,2,8);
     this.addStones(-25,5,2,8);
@@ -87,6 +91,8 @@ THREE.Fall.prototype.addObjs = function(scene){
     this.addStones(-24,7,0,4);
     
     this.loadMushroomobj(()=>{
+        THREE.TotalModelNumber++;
+        
         this.addMushroom(-6,-24);
         this.addMushroom(-5,-23);
         this.addMushroom(-7,-23);

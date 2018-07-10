@@ -44,6 +44,14 @@ var composer;
 // lighting
 var ptnlight = null;
 var state = 0.0;
+var sun = null;
+var skyOpac = undefined;
+var skyMat = null;
+
+THREE.TotalModelNumber = 0;
+
+var flag = false;
+var waitingStart = 0;
 ///////////////////////////////////
  
 init();
@@ -64,13 +72,25 @@ function update(){
     
     sea.update(renderer, scene, camera, state*2, ptnlight.position);
     
-    ptnlight.position.y = 120 * Math.sin(tick);
+    ptnlight.position.y = 60 * Math.sin(tick);
     ptnlight.position.x = 120 * Math.cos(tick);
     ptnlight.color = new THREE.Color(0x001e6d).lerp(new THREE.Color(0xe85100), state);
-    ptnlight.intensity = 0.2 + 4.0 * (state<0.5?state:(-0.2/4.0)); 
+    ptnlight.intensity = 0.9 + 7.5 * (state<0.5?state:(-0.9/7.0)); 
+    sun.position.x = 350 * Math.cos(tick);
+    sun.position.y = 220 * Math.sin(tick);
+    sun.lookAt(0,0,0);
+    
+    skyMat.color = new THREE.Color(0xAAEEFF).lerp(new THREE.Color(0xFFAD33), Math.sin(state/2*Math.PI));
+    
+    if (state > 0.5) {
+        skyMat.color = new THREE.Color(0x333333) ;
+        
+    }
+    
+    skyOpac = (state < 0.5)?Math.sin(state * Math.PI): 0.01;
     
     
-    if (sp)  sp.update();
+    if (sp) sp.update();
     if (winter) winter.update();
     if (fall) fall.update();
     if (summer) summer.update();
@@ -82,6 +102,24 @@ function update(){
     var deltaTime = clock.getDelta();
 
     updatePhysics( deltaTime );
+    
+    var TARGET = 7;
+    
+    if (dt.getTime() % 10 == 0 && !flag) {
+        console.log(THREE.TotalModelNumber);
+        document.querySelector("#progress").textContent = THREE.TotalModelNumber*1.0 / TARGET * 100;
+        var haveWaitedFor = clock.getElapsedTime() - waitingStart;
+        console.log("haveWaitedFor = ", haveWaitedFor);
+        document.querySelector("#wait").textContent = haveWaitedFor;
+        
+        if (THREE.TotalModelNumber == TARGET) {
+            flag = true;
+            
+            document.querySelector("#waitinghint").classList.toggle("unloaded");
+            document.querySelector("#waitinghint").classList.toggle("loaded");
+        }
+        
+    }
     
     
 
@@ -108,23 +146,24 @@ function addObjs() {
 
     addIsland();
     addSea();
-    addLensflare();
-    addSky();
     addPath();
 //   addBoat();
     
     
-//   addSpringObjs();
-//   addSummerObjs(); 
-//   addFallObjs(); 
-//   addWinterObjs();
+   addSpringObjs();
+   addSummerObjs(); 
+   addFallObjs(); 
+   addWinterObjs();
 //    
-   addFlag();
+    addFlag();
     
-   addLighting();
     
     addLighting();
-    addText();
+//    addText();
+    addLensflare();
+    addSky();
+    
+    
     
 
 }
@@ -133,7 +172,7 @@ function addLighting() {
     
     
     var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
-    scene.add(heml);
+//    scene.add(heml);
 //    
     
 //    var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
@@ -335,15 +374,6 @@ function addBoat() {
 }
 
 function addSky() {
-    // var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
-    // var skyMat = new THREE.MeshLambertMaterial( { 
-    //     color:0xaae1ff, 
-    //     side: THREE.BackSide,
-    //     emissive:0x3c80a8
-    // } );
-
-    // var sky = new THREE.Mesh( skyGeo, skyMat );
-    // scene.add( sky );
     var path = "imgs/skybox/";//设置路径
     var directions  = ["px", "nx", "py", "ny", "pz", "nz"];//获取对象
     var format = ".png";//格式
@@ -355,11 +385,40 @@ function addSky() {
     for (var i = 0; i < 6; i++)
         materialArray.push( new THREE.MeshBasicMaterial({
             map: textureLoader.load( path + directions[i] + format ),//将图片纹理贴上
+            opacity: skyOpac,
+            transparent:true,
+            blending: THREE.AdditiveBlending,
+            
             side: THREE.BackSide/*镜像翻转，如果设置镜像翻转，那么只会看到黑漆漆的一片，因为你身处在盒子的内部，所以一定要设置镜像翻转。*/
         }));
     var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
     var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );//创建一个完整的天空盒，填入几何模型和材质的参数
-    scene.add( skyBox );//在场景中加入天空盒
+//    scene.add( skyBox );//在场景中加入天空盒
+    
+    var texture = textureLoader.load('imgs/sky.png', (tex)=>{
+        texture = tex;
+        THREE.TotalModelNumber++;
+        
+    });
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set( 2, 1 );
+     var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
+     skyMat = new THREE.MeshBasicMaterial( { 
+         color:0xffffff, 
+         map: texture,
+         side: THREE.BackSide,
+         opacity: skyOpac,
+//         emissive:0x3c80a8,
+//        blending: THREE.AdditiveBlending,
+         transparent: true
+     } );
+     var sky = new THREE.Mesh( skyGeo, skyMat );
+     sky.renderOrder = 10; // before lensflare. 
+     scene.add( sky );
+        THREE.TotalModelNumber++;
+    
+    
     // scene.background = new THREE.CubeTextureLoader()
     //      .setPath( 'imgs/skybox/' )
     //      .load( [ 'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png' ] );
@@ -403,7 +462,11 @@ function addWinterObjs(){
     winter = new THREE.Winter(-islandR/2,islandThick + .05,islandR/2);
     winter.group.castShadow = true;
     scene.add(winter.group);
-    winter.particle.update(() => {renderer.render(scene, camera);});
+    winter.particle.update(() => {
+//        renderer.render(scene, camera);
+    }
+                         
+                          );
     
     
 }
@@ -473,21 +536,37 @@ function addFlower(c, p) {
 
 
 function addLensflare() {
-    var textureFlare0 = new THREE.TextureLoader().load( "imgs/rock.jpg" );
+    var textureFlare0 = new THREE.TextureLoader().load( "imgs/sun.png" );
 
-    var flareMaterial = new THREE.SpriteMaterial( { 
+    var flareMaterial = new THREE.MeshBasicMaterial( { 
         map: textureFlare0, 
 //        useScreenCoordinates: false, 
-        color: 0xf8ce9c, 
-        fog: false 
-//        ,blending: THREE.AdditiveBlending 
+        transparent: true,
+        opacity:0.8,
+        blending: THREE.AdditiveBlending,
+        side: THREE.FrontSide
+        
     } );
     
-    console.log("> LENS_FLRE: ", flareMaterial == null);
-    sun = new THREE.Sprite( flareMaterial );
-    sun.scale.set( 2000, 2000, 1 );
-    sun.position.set(new THREE.Vector3(0,15,0));
+    console.log("> LENS_FLRE: ", flareMaterial !== null);
+    var flare = new THREE.PlaneGeometry(500,500,10,10);
+    sun = new THREE.Mesh(flare, flareMaterial );
+    sun.position.y  = 15;
+    sun.renderOrder = 20;
     scene.add(sun);
+    
+
+//    var spriteMaterial = new THREE.SpriteMaterial( { 
+//        map: textureFlare0, 
+//        transparent: true,
+//        opacity:0.5,
+//        blending: THREE.AdditiveBlending,
+//        
+//        color: 0xffffff } );
+//
+//    sun = new THREE.Sprite( spriteMaterial );
+//    sun.scale.set(600, 600, 1)
+//    scene.add( sun );
 }
 
 
@@ -520,7 +599,9 @@ function init() {
     
 //    // scene.add(new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 ));
 //    scene.add(new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.61 ));
-	clock = new THREE.Clock();
+    
+    waitingStart  = clock.getElapsedTime();
+    
     
 //    var ambl = new THREE.AmbientLight( 0x404040, 0.3 ); // soft white light
 //    scene.add( ambl );

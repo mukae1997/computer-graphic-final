@@ -26,6 +26,8 @@ THREE.Spring.prototype.update = function(){
 THREE.Spring.prototype.addObjs = function(scene){
     this.scene = scene;
     this.loadFlowerobj(() => {
+        THREE.TotalModelNumber++;
+        
         this.addFlower(20,20, 0.2);
 //        this.addFlower(25,22, 0.15, Math.PI*1.5);
 //        this.addFlower(20,23, 0.17, Math.PI/8);
@@ -33,6 +35,8 @@ THREE.Spring.prototype.addObjs = function(scene){
         
     });
     this.loadTreeobj(()=>{
+        THREE.TotalModelNumber++;
+        
         this.addObjTree(-5,-5,1,0.05);
         this.addObjTree(16,6, -Math.PI/2);
         this.addObjTree(-24,23, Math.PI/4, 0.02);
@@ -314,10 +318,10 @@ THREE.Spring.prototype.addGrass = function(posx, posz, _h = 1.5, r = 10) {
     var grasspln = new THREE.PlaneGeometry(l,h);
     
     var grassmat = new THREE.MeshPhongMaterial( { 
-//        color: 0xffffff, 
-        emissive:0x88ff88,
-        emissiveIntensity:0.4,
-        specular: 0xbbbbbb,
+        color: 0xffffff, 
+//        emissive:0x88ff88,
+//        emissiveIntensity:0.4,
+//        specular: 0xbbbbbb,
         map: grassmap
         , transparent: true 
         , side:THREE.DoubleSide

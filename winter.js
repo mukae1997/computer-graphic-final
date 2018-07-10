@@ -89,6 +89,7 @@ function Particle(center, size, height) {
     }
 
     this.particleSystem = new THREE.Points(this.particles, pMaterial);
+    this.particleSystem.renderOrder = 23;
 }
 
 Particle.prototype.update = function () {
@@ -152,8 +153,8 @@ function getPlane() {
         // bumpMap: texture,
         //displacementScale: 0.1,// new THREE.Vector2(0.25, 0.25),
         bumpScale: 0.025,
-        emissive: 0xEBF7FD,
-        emissiveIntensity: 0.2,
+//        emissive: 0xEBF7FD,
+//        emissiveIntensity: 0.2,
         side: THREE.DoubleSide,
         shading: THREE.SmoothShading
     });

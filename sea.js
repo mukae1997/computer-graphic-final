@@ -21,7 +21,7 @@ THREE.Sea.prototype.init = function(camera) {
     
     
     
-    this.seaGeo = new THREE.PlaneGeometry( 700, 700, 50, 50);
+    this.seaGeo = new THREE.PlaneGeometry( 720, 720, 50, 50);
 //    console.log(seaGeo);
     
     this.updateSeaGeo();
@@ -116,7 +116,7 @@ THREE.Sea.prototype.update = function (render, scene, camera, state, posvec) {
     
     var posstate = 1-state / 2;
 //    this.uniforms.ilightPos.value = new THREE.Vector3(270*Math.cos(posstate * Math.PI), 10, 270*Math.sin(posstate * Math.PI));
-    this.uniforms.ilightPos.value = new THREE.Vector3(-100 , 10, 0);
+    this.uniforms.ilightPos.value = new THREE.Vector3(0 , 0, 0);
     this.uniforms.ilightPos.needsUpdate  = true;
     
     

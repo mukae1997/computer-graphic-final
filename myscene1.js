@@ -39,10 +39,7 @@ var armMovement = 0;
 var transformAux1 = new Ammo.btTransform();
 
 var composer;
-
-// lighting
-var ptnlight = null;
-var state = 0.0;
+ 
 ///////////////////////////////////
 var clock = new THREE.Clock();
 
@@ -59,6 +56,9 @@ var canJump = false;
 var spaceUp = true; //处理一直按着空格连续跳的问题
 
 
+
+
+
 var velocity = new THREE.Vector3(); //移动速度变量
 var direction = new THREE.Vector3(); //移动的方向变量
 var rotation = new THREE.Vector3(); //当前的相机朝向
@@ -72,6 +72,20 @@ var up,horizontal,down,group;
 var upRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 0, 1, 0), 0, 10);
 var horizontalRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 10);
 var downRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 0, -1, 0), 0, 10);
+
+
+
+
+
+
+
+
+// lighting
+var ptnlight = null;
+var state = 0.0;
+var sun = null;
+var skyOpac = undefined;
+var skyMat = null;
 //////////////////////////////////
  
 init();
@@ -235,34 +249,41 @@ function initPointerLock() {
 
 function update(){
     var dt = new Date(); 
-    var tick = dt.getTime()*0.000003 % Math.PI;
+    const loop = 2 * Math.PI;
+    var tick = dt.getTime()*0.0003 % loop;
     
-    state = tick / Math.PI;
+    state = tick / loop;
     
-    sea.update(renderer, scene, camera, state);
+    sea.update(renderer, scene, camera, state*2, ptnlight.position);
     
-    ptnlight.position.y = 100 * Math.sin(tick);
-    ptnlight.position.x = 80 * Math.cos(tick);
+    
+    ptnlight.position.y = 120 * Math.sin(tick);
+    ptnlight.position.x = 120 * Math.cos(tick);
     ptnlight.color = new THREE.Color(0x001e6d).lerp(new THREE.Color(0xe85100), state);
-    ptnlight.intensity = 0.2 + 4.0 * state; 
     
-    if(sp)  
-        sp.update();
-    if (winter) 
-        winter.update();
-    if(fall) 
-        fall.update();
+    skyMat.color = new THREE.Color(0xAAEEFF).lerp(new THREE.Color(0xFFAD33), Math.sin(state*Math.PI));
     
+    ptnlight.intensity = 0.6 + 4.0 * (state<0.5?state:(-0.2/4.0)); 
+    sun.position.x = 320 * Math.cos(tick);
+    sun.position.y = 220 * Math.sin(tick);
+    sun.lookAt(0,0,0);
+    skyOpac = (state < 0.5)?Math.sin(state * Math.PI): 0.01;
+    
+    
+    if (sp) sp.update();
+    if (winter) winter.update();
+    if (fall) fall.update();
+    if (summer) summer.update();
+    
+    
+    if(boat) boat.position.y = 0.5+Math.sin(dt.getTime()*0.003 + Math.PI/2);
     
 
-    if(boat) 
-        boat.position.y = 0.5+Math.sin(dt.getTime()*0.003 + Math.PI/2);
-    
-    
     var deltaTime = clock.getDelta();
 
-    updatePhysics( deltaTime );    
-    stats.update();
+    updatePhysics( deltaTime );
+    
+    
 
 }
 
@@ -410,7 +431,6 @@ function addObjs() {
     
     addIsland();
     addSea();
-    addLensflare();
     addSky();
     addPath();
     addBoat();
@@ -424,14 +444,52 @@ function addObjs() {
     addFlag();
     
     addLighting();
+    addLensflare();
+    
 
 }
 /////////////////////////////////////////////////////
+
+
+function addLensflare() {
+    var textureFlare0 = new THREE.TextureLoader().load( "imgs/sun.png" );
+
+    var flareMaterial = new THREE.MeshBasicMaterial( { 
+        map: textureFlare0, 
+//        useScreenCoordinates: false, 
+        transparent: true,
+        opacity:0.8,
+        blending: THREE.AdditiveBlending,
+        side: THREE.FrontSide
+        
+    } );
+    
+    console.log("> LENS_FLRE: ", flareMaterial !== null);
+    var flare = new THREE.PlaneGeometry(500,500,10,10);
+    sun = new THREE.Mesh(flare, flareMaterial );
+    sun.position.y  = 15;
+    sun.renderOrder = 20;
+    scene.add(sun);
+    
+
+//    var spriteMaterial = new THREE.SpriteMaterial( { 
+//        map: textureFlare0, 
+//        transparent: true,
+//        opacity:0.5,
+//        blending: THREE.AdditiveBlending,
+//        
+//        color: 0xffffff } );
+//
+//    sun = new THREE.Sprite( spriteMaterial );
+//    sun.scale.set(600, 600, 1)
+//    scene.add( sun );
+}
+
 function addLighting() {
     
     
     var heml = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.61 );
-    scene.add(heml);
+//    scene.add(heml);
     
 //    
     
@@ -625,32 +683,50 @@ function addBoat() {
 }
 
 function addSky() {
-    // var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
-    // var skyMat = new THREE.MeshLambertMaterial( { 
-    //     color:0xaae1ff, 
-    //     side: THREE.BackSide,
-    //     emissive:0x3c80a8
-    // } );
-
-    // var sky = new THREE.Mesh( skyGeo, skyMat );
-    // scene.add( sky );
     var path = "imgs/skybox/";//设置路径
     var directions  = ["px", "nx", "py", "ny", "pz", "nz"];//获取对象
     var format = ".png";//格式
-    //创建盒子，并设置盒子的大小为( 5000, 5000, 5000 )
+    //创建盒子，并设置盒子的大小为( 700, 700, 700 )
     var skyGeometry = new THREE.BoxGeometry( 700, 700, 700 );
     //设置盒子材质
     var materialArray = [];
+    var textureLoader = new THREE.TextureLoader();
     for (var i = 0; i < 6; i++)
         materialArray.push( new THREE.MeshBasicMaterial({
-            map: THREE.ImageUtils.loadTexture( path + directions[i] + format ),//将图片纹理贴上
+            map: textureLoader.load( path + directions[i] + format ),//将图片纹理贴上
+            opacity: skyOpac,
+            transparent:true,
+            blending: THREE.AdditiveBlending,
+            
             side: THREE.BackSide/*镜像翻转，如果设置镜像翻转，那么只会看到黑漆漆的一片，因为你身处在盒子的内部，所以一定要设置镜像翻转。*/
         }));
     var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
     var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );//创建一个完整的天空盒，填入几何模型和材质的参数
-    scene.add( skyBox );//在场景中加入天空盒
-
+//    scene.add( skyBox );//在场景中加入天空盒
+    
+     var texture = textureLoader.load('imgs/sky.png');
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set( 2, 1 );
+     var skyGeo = new THREE.SphereGeometry( 400, 32, 15 );
+     skyMat = new THREE.MeshBasicMaterial( { 
+         color:0xffffff, 
+         map: texture,
+         side: THREE.BackSide,
+         opacity: skyOpac,
+//         emissive:0x3c80a8,
+        blending: THREE.AdditiveBlending,
+         transparent: true
+     } );
+     var sky = new THREE.Mesh( skyGeo, skyMat );
+     sky.renderOrder = 10; // before lensflare. 
+     scene.add( sky );
+    
+    // scene.background = new THREE.CubeTextureLoader()
+    //      .setPath( 'imgs/skybox/' )
+    //      .load( [ 'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png' ] );
 }
+
 
 /////////////////   season setting   ///////////////////
 
@@ -698,17 +774,7 @@ function addWinterObjs(){
 }
 
 
-
-function addLensflare() {
-    var textureFlare0 = THREE.ImageUtils.loadTexture( "imgs/rock.jpg" );
-
-    var flareMaterial = new THREE.SpriteMaterial( { map: textureFlare0, useScreenCoordinates: false, color: 0xf8ce9c, fog: false, blending: THREE.AdditiveBlending } );
-    sun = new THREE.Sprite( flareMaterial );
-    sun.scale.set( 2000, 2000, 1 );
-    sun.position.set(sea.lightpos);
-    scene.add(sun);
-}
-
+ 
 function addStats() {
     stats = new Stats();
     stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom

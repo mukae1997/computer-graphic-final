@@ -4,11 +4,64 @@
 		<meta charset=utf-8>
 		<title>Seasons Island</title>
 		<style>
-			body { margin: 0; }
+			body { 
+                margin: 0;
+                width:100%;
+                height:100%; 
+            
+            }
 			canvas { width: 100%; height: 100% }
+            #waitinghint{
+                position: fixed;
+                width:100%;
+                height:100%;
+                margin: 0;
+                padding:0;
+                
+            }
+            #container{    
+                margin-top:300px;
+                margin-left:30%;
+                
+                height:100px; 
+                width:500px;
+                
+            }
+            
+            .unloaded{
+                background-color: darkslategrey;
+                color:ghostwhite;
+                font-size: 10px;
+                opacity: 0.8;
+                
+            }
+            
+            .loaded{
+                opacity: 0;
+                display: none;
+            }
+            
 		</style>
 	</head>
 	<body>
+        <div id="waitinghint" class = "unloaded">
+            <div id="container">
+                <h1 >
+                 Seasons Island
+                </h1>
+                <div>
+                    
+                Object Loading... <span id="progress">0</span>% / 100%
+
+                </div>
+                <div>
+                    已等待 <span id="wait">0</span>秒
+                </div>
+            </div>
+            
+            
+        
+        </div>
         <script id="vertexShader" type="x-shader/x-vertex">
             varying vec2 vUv;
             varying vec4 worldPos;
@@ -24,7 +77,7 @@
                  vNormal = normal;
 				 gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
                  
-                 worldPos = transform * modelMatrix * vec4(position.xyz, 1.0);
+                 worldPos =  modelMatrix * vec4(position.xyz, 1.0);
                  mirrorCoord =  textureMatrix * modelMatrix * vec4(position, 1.0);
 			}
 
@@ -37,6 +90,8 @@
         uniform sampler2D normalSampler;
         
         uniform sampler2D theTexture;
+        uniform mat4 transform;
+
         varying vec4 worldPos;
         varying vec3 vNormal; 
         uniform vec3 viewPos;
@@ -49,11 +104,11 @@
             // gl_FragCoord.x  屏幕坐标
             // gl_FragColor = vec4(vUv.x, vUv.y,1,1);
             
-            vec3 lightPos = vec3(650.0,38.0,950.0); // fake light
-            lightPos = ilightPos;
+            vec3 lightPos = vec3(-650.0,38.0,300.0); // fake light
+//            lightPos = ilightPos;
             
 
-            float ambientStrength = 0.2;
+            float ambientStrength = 0.7;
             vec3 lightColor = vec3(0.6,0.8,0.86); // fake
             vec3 myblue = vec3(0.0 ,30.0/ 255.0,109.0/ 255.0);
             vec3 myorange = vec3(255.0/ 255.0,80.0/ 255.0,0.0);
@@ -70,7 +125,8 @@
             
             float darkstate = 0.0;
             if (iState > 1.0) darkstate = iState - 1.0;
-            // calculating lighting in world space
+            
+            // NOTICE!!!: THIS SHADER calculating lighting in WORLD space
             vec3 ambient = ambientStrength * lightColor - darkstate; 
             
             // diffuse lighting
@@ -78,14 +134,19 @@
             vec3 norm = normalize(vNormal);
             
             norm =   (texture2D(theTexture, vUv).xyz ); // wrong but good effect
-//            norm =   (texture2D(normalSampler, vUv).xyz );
-            vec3 lightDir = normalize(lightPos - vec3(worldPos));
+            norm =   normalize(texture2D(normalSampler, vUv).xyz );
+            
+            vec3 lightDir = normalize(lightPos - vec3(worldPos)); // point light
+            
+            vec3 dirlightpos = vec3(-200.0*sin(iState * 3.13159),10.0 ,0.0);
+            lightDir = normalize(-dirlightpos); // directional light
+            
             float diff = max(dot(norm, lightDir), 0.0);
             vec3 diffuse = diff * lightColor;
             
             // specular lighting 
             
-            float specularStrength = 0.1;
+            float specularStrength = 0.8;
             if (darkstate != 0.0 ) specularStrength *= (1.0-darkstate);
             vec3 viewDir = normalize(viewPos - vec3(worldPos));
             vec3 inlight = -lightDir;
@@ -93,7 +154,7 @@
             float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
             vec3 specular = specularStrength * spec * lightColor;   
             vec4 texColor = texture2D(theTexture, vUv);
-            vec4 result = vec4(ambient*0.0 + diffuse + specular*1.0, 1.0) * texColor;
+            vec4 result = vec4(ambient*0.3 + diffuse + specular*1.0, 1.0) * texColor;
 
 
             vec4 env = texture2DProj(mirrorSampler, mirrorCoord);
@@ -111,8 +172,10 @@
             //vec3 reflectColor = vec3(0.5,1.0,1.0);  
             
             float latterRatio = 0.51;
-            gl_FragColor = vec4(mix(result.rgb, reflectColor,fresnel),1.0);
-//             gl_FragColor = result.rgba;
+            gl_FragColor = vec4(mix(result.rgb, reflectColor,0.4),1.0);
+//             gl_FragColor.rgb = worldPos.rgb / 700.0;
+//            if (distance(vec3(worldPos).x, dirlightpos.x) < 1.0) {gl_FragColor.rgb = vec3(0.0,1.0,0.0);}
+//            if (distance(vec3(worldPos).z, dirlightpos.y) < 1.0) {gl_FragColor.rgb = vec3(0.0,0.0,1.0);}
         }
         </script>
 		<script src="js/three.js"></script>
