@@ -57,16 +57,17 @@ animate();
 //////////////////////////////////////////
 function update(){
     var dt = new Date(); 
-    var tick = dt.getTime()*0.0003 % Math.PI;
+    const loop = 2 * Math.PI;
+    var tick = dt.getTime()*0.0003 % loop;
     
-    state = tick / Math.PI;
+    state = tick / loop;
     
-    sea.update(renderer, scene, camera, state);
+    sea.update(renderer, scene, camera, state*2, ptnlight.position);
     
-    ptnlight.position.y = 100 * Math.sin(tick);
-    ptnlight.position.x = 80 * Math.cos(tick);
+    ptnlight.position.y = 120 * Math.sin(tick);
+    ptnlight.position.x = 120 * Math.cos(tick);
     ptnlight.color = new THREE.Color(0x001e6d).lerp(new THREE.Color(0xe85100), state);
-    ptnlight.intensity = 0.2 + 4.0 * state; 
+    ptnlight.intensity = 0.2 + 4.0 * (state<0.5?state:(-0.2/4.0)); 
     
     
     if (sp)  sp.update();
@@ -113,12 +114,14 @@ function addObjs() {
 //   addBoat();
     
     
-    addSpringObjs();
-    addSummerObjs(); 
-    addFallObjs(); 
-    addWinterObjs();
-
-    addFlag();
+//   addSpringObjs();
+//   addSummerObjs(); 
+//   addFallObjs(); 
+//   addWinterObjs();
+//    
+   addFlag();
+    
+   addLighting();
     
     addLighting();
     addText();

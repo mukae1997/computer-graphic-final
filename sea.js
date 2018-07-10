@@ -55,7 +55,7 @@ THREE.Sea.prototype.init = function(camera) {
             type: "m4", value: this.textureMatrix 
         },
         iState:{
-            type:'f',
+            type:'1f',
             value: 0.0
         },
         normalSampler: {
@@ -85,6 +85,7 @@ THREE.Sea.prototype.init = function(camera) {
     this.uniforms.ilightPos.value = this.sea.lightpos;
     
     this.sea.rotation.x = -Math.PI/2;
+    this.sea.rotation.z = -Math.PI/2;
     
     
     // 应用mesh的变换
@@ -96,7 +97,7 @@ THREE.Sea.prototype.init = function(camera) {
     
 }
 
-THREE.Sea.prototype.update = function (render, scene, camera, state) {
+THREE.Sea.prototype.update = function (render, scene, camera, state, posvec) {
     
     
     
@@ -110,8 +111,13 @@ THREE.Sea.prototype.update = function (render, scene, camera, state) {
     this.uniforms.mirrorSampler.value = this.mirrorTexture.texture;
     this.uniforms.mirrorSampler.needsUpdate = true;
     
-    this.uniforms.iState = state;
+    this.uniforms.iState.value = state;
     this.uniforms.iState.needsUpdate  = true;
+    
+    var posstate = 1-state / 2;
+//    this.uniforms.ilightPos.value = new THREE.Vector3(270*Math.cos(posstate * Math.PI), 10, 270*Math.sin(posstate * Math.PI));
+    this.uniforms.ilightPos.value = new THREE.Vector3(-100 , 10, 0);
+    this.uniforms.ilightPos.needsUpdate  = true;
     
     
     
